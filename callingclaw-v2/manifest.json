@@ -1,0 +1,8 @@
+{
+  "name": "CallingClaw v2",
+  "description": "Enhanced CallingClaw landing page with interactive feature carousels",
+  "index": "index.html",
+  "pages": [
+    { "file": "index.html", "title": "Home" }
+  ]
+}
