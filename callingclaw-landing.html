@@ -721,6 +721,7 @@
       gap: 0.75rem;
       justify-content: center;
       flex-wrap: wrap;
+      margin-bottom: 1.25rem;
     }
 
     .badge {
@@ -745,6 +746,32 @@
       background: var(--accent-light);
       border-color: transparent;
       color: var(--accent);
+    }
+
+    .capability-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .capability-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      opacity: 0.85;
+    }
+
+    .capability-tag .cap-icon {
+      font-size: 0.85rem;
+      line-height: 1;
     }
 
     /* ── Bandwidth Section ────────────────────────────── */
@@ -2034,8 +2061,8 @@
   <!-- Meeting Harness Section -->
   <section class="meeting-harness">
     <div class="container">
-      <h2><span class="underline">Meeting Harness</span> for Your Full time Agents</h2>
-      <p class="meeting-harness-subtitle">Gives your agent a calendar, a voice, and computer access</p>
+      <h2><span class="underline">Meeting Harness</span> for Your Full-time Agents</h2>
+      <p class="meeting-harness-subtitle">CoCo doesn't replace your agent — it gives your agent a meeting room, a calendar, and a voice.<br>Your agent's own capabilities come along naturally.</p>
       <div class="badge-row">
         <span class="badge accent">
           <img src="./Assests/logo-openclaw.png" class="claw-icon" alt="">
@@ -2045,6 +2072,14 @@
           <img src="./Assests/logo-claude-code.png" class="claw-icon" alt="">
           Claude Code
         </span>
+      </div>
+      <div class="capability-row">
+        <span class="capability-tag"><span class="cap-icon">🧠</span> Memory</span>
+        <span class="capability-tag"><span class="cap-icon">📁</span> Files</span>
+        <span class="capability-tag"><span class="cap-icon">🔧</span> MCP Tools</span>
+        <span class="capability-tag"><span class="cap-icon">🌐</span> Browser & Cookies</span>
+        <span class="capability-tag"><span class="cap-icon">📅</span> Calendar</span>
+        <span class="capability-tag"><span class="cap-icon">🎙</span> Voice</span>
       </div>
     </div>
   </section>
