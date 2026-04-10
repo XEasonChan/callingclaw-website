@@ -3,26 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CallingClaw gives your AI agent a calendar, a voice, a screen, and a computer. It prepares before meetings, joins on time, presents work, and helps you iterate faster.">
-  <meta name="theme-color" content="#FAF6F0" media="(prefers-color-scheme: light)">
+  <meta name="description" content="CallingClaw is a local-first architecture for multimodal meeting intelligence agents. Give your agent a seat, a voice, and computer access.">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0a0a0f" media="(prefers-color-scheme: dark)">
-  <link rel="icon" type="image/png" href="./logo.png">
-  <title>CallingClaw — Your Agent Gets Its Own Meeting Room</title>
+  <link rel="icon" type="image/png" href="./Assests/logo.png">
+  <title>CallingClaw — AI That Joins Your Meetings</title>
+
   <!-- Open Graph -->
-  <meta property="og:title" content="CallingClaw — Your Agent Gets Its Own Meeting Room">
-  <meta property="og:description" content="Give your AI agent a calendar, a voice, and a screen. CallingClaw lets OpenClaw and Claude Code prepare, join meetings, present work, and iterate faster.">
-  <meta property="og:image" content="./logo.png">
+  <meta property="og:title" content="CallingClaw — AI That Joins Your Meetings">
+  <meta property="og:description" content="Give your agent a calendar, a voice, and computer access. CallingClaw joins video calls with full memory of your work — ready to discuss, present, and act.">
   <meta property="og:type" content="website">
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="CallingClaw — Your Agent Gets Its Own Meeting Room">
-  <meta name="twitter:description" content="Give your AI agent a calendar, a voice, and a screen. CallingClaw lets OpenClaw and Claude Code prepare, join meetings, present work, and iterate faster.">
-  <meta name="twitter:image" content="./logo.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hedvig+Letters+Serif:opsz@12..24&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- GSAP + ScrollTrigger + Lenis for smooth scroll animations -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+
   <style>
     /* ── Design Tokens ─────────────────────────────────── */
     :root {
-      --bg: #FAF6F0;
-      --bg-subtle: #F3EDE4;
+      --bg: #ffffff;
+      --bg-subtle: #faf9f9;
       --surface: #ffffff;
       --surface-elevated: #ffffff;
       --text: #1f2937;
@@ -38,8 +44,8 @@
       --border: #e5e7eb;
       --border-light: #f3f4f6;
 
-      --font-display: "Space Grotesk", system-ui, sans-serif;
-      --font-body: "Inter", system-ui, sans-serif;
+      --font-display: "Hedvig Letters Serif", Georgia, serif;
+      --font-body: "Hedvig Letters Serif", Georgia, serif;
       --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
       --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -78,14 +84,28 @@
 
     /* ── Reset ──────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    blockquote { margin: 0; }
 
     /* ── Base ───────────────────────────────────────────── */
     html {
       font-size: 16px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      scroll-behavior: smooth;
+    }
+
+    html.lenis, html.lenis body {
+      height: auto;
+    }
+
+    .lenis.lenis-smooth {
+      scroll-behavior: auto !important;
+    }
+
+    .lenis.lenis-smooth [data-lenis-prevent] {
+      overscroll-behavior: contain;
+    }
+
+    .lenis.lenis-stopped {
+      overflow: hidden;
     }
 
     body {
@@ -94,6 +114,7 @@
       background: var(--bg);
       line-height: 1.6;
       transition: background var(--duration) ease, color var(--duration) ease;
+      overflow-x: hidden;
     }
 
     ::selection {
@@ -106,12 +127,12 @@
       font-family: var(--font-display);
       font-weight: 600;
       line-height: 1.2;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
       color: var(--text);
     }
 
-    h1 { font-size: clamp(2.5rem, 5vw, 3.75rem); font-weight: 600; letter-spacing: -0.03em; }
-    h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); }
+    h1 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 600; letter-spacing: -0.01em; }
+    h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); letter-spacing: -0.01em; }
     h3 { font-size: clamp(1.125rem, 2vw, 1.375rem); }
     h4 { font-size: 1rem; font-weight: 600; }
 
@@ -123,33 +144,16 @@
       transition: color var(--duration) var(--ease-out);
     }
     a:hover { color: var(--accent-hover); }
-    a:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-      border-radius: 2px;
-    }
-
-    code {
-      font-family: var(--font-mono);
-      font-size: 0.875em;
-      background: var(--bg-subtle);
-      padding: 0.2em 0.4em;
-      border-radius: 4px;
-    }
 
     /* ── Layout ─────────────────────────────────────────── */
     .container {
-      max-width: 1200px;
+      max-width: 1100px;
       margin-inline: auto;
       padding-inline: clamp(1.5rem, 5vw, 3rem);
     }
 
     section {
-      padding-block: clamp(4rem, 10vw, 8rem);
-    }
-
-    section[id] {
-      scroll-margin-top: 5rem;
+      padding-block: clamp(3rem, 8vw, 6rem);
     }
 
     /* ── Nav ──────────────────────────────────────────── */
@@ -172,9 +176,9 @@
     .logo {
       font-family: var(--font-display);
       font-weight: 700;
-      font-size: 1.25rem;
+      font-size: 1.125rem;
       letter-spacing: -0.02em;
-      color: var(--text);
+      color: var(--accent);
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -183,29 +187,40 @@
     .logo-mark {
       width: 32px;
       height: 32px;
-      border-radius: 8px;
-      overflow: hidden;
-      transition: transform 0.3s var(--ease-out);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
     .logo-mark img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
     }
 
-    .logo:hover .logo-mark {
-      transform: rotate(-5deg) scale(1.05);
+    .claw-icon {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+
+    .claw-icon-sm {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      vertical-align: middle;
     }
 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 2.5rem;
+      gap: 2rem;
       list-style: none;
     }
 
     .nav-links a {
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       font-weight: 500;
       color: var(--text-secondary);
       padding: 0.5rem 0;
@@ -214,116 +229,113 @@
 
     .nav-links a:hover { color: var(--text); }
 
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-    }
-
+    /* ── Theme Toggle ────────────────────────────────── */
     .theme-toggle {
-      background: var(--bg-subtle);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      width: 40px;
-      height: 40px;
-      cursor: pointer;
-      color: var(--text-secondary);
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
       transition: all var(--duration) var(--ease-out);
     }
 
     .theme-toggle:hover {
-      color: var(--text);
+      background: var(--surface);
       border-color: var(--text-tertiary);
-    }
-
-    .theme-toggle:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
     }
 
     .theme-toggle svg {
       width: 18px;
       height: 18px;
-      transition: transform 0.4s var(--ease-expo);
+      color: var(--text-secondary);
+      transition: color var(--duration) var(--ease-out);
     }
-    .theme-toggle:active svg {
-      transform: rotate(180deg) scale(0.85);
+
+    .theme-toggle:hover svg {
+      color: var(--text);
     }
-    .theme-toggle .icon-sun { display: none; }
-    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+    /* Show sun in dark mode, moon in light mode */
+    [data-theme="light"] .theme-toggle .icon-sun { display: none; }
+    [data-theme="light"] .theme-toggle .icon-moon { display: block; }
     [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
-    /* ── Hero ───────────────────────────────────────────── */
-    .hero {
-      padding-block: clamp(4rem, 10vw, 6rem) clamp(3rem, 6vw, 5rem);
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Audio waveform canvas background */
-    .hero-scatter {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0;
-      transition: opacity 400ms ease;
-    }
-    .hero-scatter.visible {
-      opacity: 1;
-    }
-
-    .hero-layout {
-      display: flex;
-      flex-direction: column;
+    /* ── Buttons ──────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all var(--duration) var(--ease-out);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-accent);
+    }
+
+    .btn-secondary {
+      background: var(--bg-subtle);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface);
+      border-color: var(--text-tertiary);
+      color: var(--text);
+    }
+
+    /* ── Hero Section ─────────────────────────────────── */
+    .hero {
       text-align: center;
-      gap: 0;
+      padding-block: clamp(3rem, 8vw, 5rem) 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Hero Noise Canvas Background ────────────────── */
+    .hero-noise-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 380px; /* covers nav + tagline + subtitle + buttons */
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .hero .container,
+    .hero .hero-image-wrapper {
       position: relative;
       z-index: 1;
     }
 
-    .hero-content {
-      text-align: center;
-      max-width: 720px;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--accent-light);
-      padding: 0.5rem 1rem;
-      border-radius: 100px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 1.5rem;
-    }
-
-    .hero-badge .lobster {
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
-      overflow: hidden;
-      display: inline-block;
-      vertical-align: middle;
-    }
-    .hero-badge .lobster img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
     .hero h1 {
-      margin-bottom: 1.25rem;
-      max-width: 20ch;
+      max-width: 28ch;
       margin-inline: auto;
+      margin-bottom: 1rem;
     }
 
     .hero h1 .gradient {
@@ -331,66 +343,1004 @@
     }
 
     .hero-subtitle {
-      font-size: 1.125rem;
+      font-size: 1rem;
       line-height: 1.7;
-      max-width: 52ch;
-      margin-bottom: 2rem;
+      max-width: 60ch;
       margin-inline: auto;
+      margin-bottom: 2rem;
     }
 
     .hero-actions {
       display: flex;
       gap: 1rem;
-      flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: clamp(3rem, 6vw, 4.5rem);
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
     }
 
-    /* Meeting Frame */
-    .hero-visual {
+    /* Hero Image with GSAP ScrollTrigger Animation */
+    .hero-image-wrapper {
       position: relative;
-      max-width: 900px;
       width: 100%;
+      overflow: visible;
     }
 
-    .meeting-frame {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
+    /* Pin spacer container - GSAP will pin within this */
+    .hero-pin-spacer {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .hero-image-container {
+      position: relative;
+      width: min(100% - 3rem, 1200px);
+      margin-inline: auto;
       overflow: hidden;
-      box-shadow: var(--shadow-lg);
+      border-radius: 16px;
+      will-change: width, border-radius;
+      transition: width 0s, border-radius 0s;
     }
 
-    .meeting-header {
+    .hero-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    /* Demo Panel Overlay — centered, container width, vertically centered when done */
+    .hero-demo-panel {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, 100%);
+      width: min(calc(100vw - 3rem), 1200px);
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(16px);
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      z-index: 10;
+      will-change: transform, opacity;
+    }
+
+    [data-theme="dark"] .hero-demo-panel {
+      background: rgba(31, 31, 35, 0.95);
+    }
+
+    /* Demo Panel Header */
+    .demo-panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem 1rem;
+      padding: 0.625rem 0.875rem;
       background: var(--bg-subtle);
       border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
     }
 
-    .meeting-title {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--text-secondary);
+    .demo-panel-title {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
     }
 
-    .meeting-live {
+    .demo-panel-title svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .demo-panel-live {
       display: flex;
       align-items: center;
-      gap: 0.375rem;
-      font-size: 0.7rem;
-      font-weight: 600;
+      gap: 0.25rem;
       color: var(--success);
+      font-weight: 600;
+      font-size: 0.6875rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
-    .meeting-live::before {
+    .demo-panel-live::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: livePulse 1.5s ease-in-out infinite;
+    }
+
+    /* Demo Panel Tabs */
+    .demo-panel-tabs {
+      display: flex;
+      gap: 1px;
+      padding: 0.5rem 0.5rem 0;
+      background: #dee1e6;
+    }
+
+    [data-theme="dark"] .demo-panel-tabs {
+      background: #323232;
+    }
+
+    .demo-panel-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.375rem 0.625rem;
+      background: #c8ccd3;
+      border: none;
+      border-radius: 6px 6px 0 0;
+      font-family: var(--font-body);
+      font-size: 0.625rem;
+      font-weight: 500;
+      color: #5f6368;
+      cursor: pointer;
+    }
+
+    [data-theme="dark"] .demo-panel-tab {
+      background: #252525;
+      color: #9ca3af;
+    }
+
+    .demo-panel-tab.active {
+      background: #f7f6f3;
+      color: #37352f;
+    }
+
+    [data-theme="dark"] .demo-panel-tab.active {
+      background: #191919;
+      color: #e4e4e7;
+    }
+
+    .demo-panel-tab svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* Demo Panel Content */
+    .demo-panel-content {
+      padding: 0.75rem;
+      background: #f7f6f3;
+      min-height: 180px;
+    }
+
+    [data-theme="dark"] .demo-panel-content {
+      background: #191919;
+    }
+
+    .demo-panel-table-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.625rem;
+    }
+
+    .demo-panel-table-icon {
+      font-size: 1rem;
+    }
+
+    .demo-panel-table-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #37352f;
+    }
+
+    [data-theme="dark"] .demo-panel-table-title {
+      color: #ffffffcf;
+    }
+
+    .demo-panel-avatars {
+      margin-left: auto;
+      display: flex;
+      gap: 0.375rem;
+    }
+
+    .demo-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.625rem;
+      font-weight: 600;
+      background: #e5e7eb;
+      color: var(--text-secondary);
+    }
+
+    .demo-avatar.active {
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+
+    /* Mini Table */
+    .demo-mini-table {
+      background: white;
+      border-radius: 4px;
+      border: 1px solid #e9e9e7;
+      overflow: hidden;
+      font-size: 0.6875rem;
+    }
+
+    [data-theme="dark"] .demo-mini-table {
+      background: #2f2f2f;
+      border-color: #373737;
+    }
+
+    .demo-mini-row {
+      display: grid;
+      grid-template-columns: 1.5fr 0.8fr 0.5fr 1fr;
+      border-bottom: 1px solid #e9e9e7;
+    }
+
+    [data-theme="dark"] .demo-mini-row {
+      border-color: #373737;
+    }
+
+    .demo-mini-row:last-child {
+      border-bottom: none;
+    }
+
+    .demo-mini-row.header {
+      background: #f7f6f3;
+      font-weight: 500;
+      color: #9b9a97;
+    }
+
+    [data-theme="dark"] .demo-mini-row.header {
+      background: #252525;
+    }
+
+    .demo-mini-cell {
+      padding: 0.375rem 0.5rem;
+      color: #37352f;
+      border-right: 1px solid #e9e9e7;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    [data-theme="dark"] .demo-mini-cell {
+      color: #ffffffcf;
+      border-color: #373737;
+    }
+
+    .demo-mini-cell:last-child {
+      border-right: none;
+    }
+
+    .demo-tag {
+      display: inline-block;
+      padding: 0.0625rem 0.25rem;
+      border-radius: 2px;
+      font-size: 0.5625rem;
+    }
+
+    .demo-tag.green { background: #dbeddb; color: #1e6b53; }
+    .demo-tag.yellow { background: #fdecc8; color: #9a6700; }
+
+    [data-theme="dark"] .demo-tag.green { background: #2b593f; color: #6ee7b7; }
+    [data-theme="dark"] .demo-tag.yellow { background: #594a2b; color: #fcd34d; }
+
+    /* Speech Bubble in Demo */
+    .demo-speech-bubble {
+      position: absolute;
+      bottom: 0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(220, 74, 58, 0.9);
+      color: white;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.6875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      white-space: nowrap;
+    }
+
+    .demo-speech-bubble svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Demo Controls */
+    .demo-panel-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.625rem;
+      background: var(--bg-subtle);
+      border-top: 1px solid var(--border);
+    }
+
+    .demo-control-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .demo-control-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .demo-control-btn.screen-share {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .demo-control-btn.end {
+      background: var(--danger);
+      color: white;
+      border-color: var(--danger);
+    }
+
+    /* ── Meeting Harness Section ─────────────────────── */
+    .meeting-harness {
+      text-align: center;
+      background: var(--bg-subtle);
+    }
+
+    .meeting-harness h2 {
+      margin-bottom: 0.75rem;
+    }
+
+    .meeting-harness h2 .underline {
+      text-decoration: underline;
+      text-decoration-color: var(--accent);
+      text-underline-offset: 4px;
+    }
+
+    .meeting-harness-subtitle {
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 0.875rem;
+      border-radius: 100px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .badge svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .badge.accent {
+      background: var(--accent-light);
+      border-color: transparent;
+      color: var(--accent);
+    }
+
+    /* ── Bandwidth Section ────────────────────────────── */
+    .bandwidth {
+      padding-block: clamp(3rem, 8vw, 5rem);
+      background: var(--bg-subtle);
+    }
+
+    .bandwidth-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .bandwidth-header h2 {
+      margin-bottom: 1rem;
+    }
+
+    .bandwidth-header h2 .highlight {
+      color: var(--accent);
+      text-decoration: underline;
+      text-decoration-color: var(--accent);
+      text-decoration-thickness: 3px;
+      text-underline-offset: 4px;
+    }
+
+    .bandwidth-header p {
+      font-size: 1rem;
+      line-height: 1.7;
+      max-width: 60ch;
+      margin-inline: auto;
+      color: var(--text-secondary);
+    }
+
+    .bandwidth-content {
+      display: grid;
+      grid-template-columns: 0.8fr 1.4fr;
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+
+    /* Speed Comparison Cards (Wispr Flow style) */
+    .speed-comparison {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+    }
+
+    .bandwidth-content.visible .speed-comparison {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .speed-card {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .speed-card:first-child {
+      border-radius: 16px 16px 0 0;
+      border-bottom: none;
+    }
+
+    .speed-card:last-child {
+      border-radius: 0 0 16px 16px;
+      flex: 1;
+    }
+
+    .speed-card-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .speed-card-value {
+      font-size: 2.5rem;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .speed-card-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      flex: 1;
+    }
+
+    .speed-card.voice {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .speed-card.voice .speed-card-label {
+      color: rgba(255,255,255,0.8);
+    }
+
+    .speed-card.voice .speed-card-value {
+      color: white;
+    }
+
+    .speed-card.voice .speed-card-text {
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* Attachment Tags in Speed Card */
+    .speed-attachments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .speed-attachment {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.625rem;
+      background: rgba(255,255,255,0.15);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: rgba(255,255,255,0.9);
+      backdrop-filter: blur(4px);
+    }
+
+    .speed-attachment-icon {
+      font-size: 0.875rem;
+    }
+
+    /* Bandwidth Image Container */
+    .bandwidth-image-container {
+      position: relative;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+      display: flex;
+      align-items: stretch;
+    }
+
+    .bandwidth-image-container.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .bandwidth-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Voice Wave Indicator */
+    .voice-wave-indicator {
+      position: absolute;
+      top: 40%;
+      right: 15%;
+      background: rgba(66, 154, 255, 0.5);
+      border-radius: 24px;
+      padding: 0.5rem 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.5s var(--ease-out) 0.5s, transform 0.5s var(--ease-out) 0.5s;
+    }
+
+    .bandwidth-image-container.visible .voice-wave-indicator {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .voice-wave {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 20px;
+    }
+
+    .voice-wave-bar {
+      width: 3px;
+      background: white;
+      border-radius: 2px;
+      animation: voiceWave 0.8s ease-in-out infinite;
+    }
+
+    .voice-wave-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .voice-wave-bar:nth-child(2) { height: 16px; animation-delay: 0.1s; }
+    .voice-wave-bar:nth-child(3) { height: 12px; animation-delay: 0.2s; }
+    .voice-wave-bar:nth-child(4) { height: 18px; animation-delay: 0.3s; }
+    .voice-wave-bar:nth-child(5) { height: 10px; animation-delay: 0.4s; }
+
+    @keyframes voiceWave {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.5); }
+    }
+
+    /* Action Status Cards - Stacking Animation */
+    .action-cards {
+      position: absolute;
+      bottom: 11%;
+      left: 5%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+
+    .action-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      color: #1f2937;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border: 2px solid var(--accent);
+      opacity: 0;
+      transform: translateY(40px);
+      will-change: transform, opacity;
+    }
+
+    .action-card-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      color: var(--accent);
+    }
+
+    .action-card-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── How It Works Section ─────────────────────────── */
+    .how-it-works {
+      background: #f5f5f7;
+    }
+
+    [data-theme="dark"] .how-it-works {
+      background: #1a1a1e;
+    }
+
+    .hiw-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .hiw-header h2 {
+      margin-bottom: 0.5rem;
+    }
+
+    .hiw-header p {
+      font-size: 1rem;
+      margin-inline: auto;
+    }
+
+    /* Timeline */
+    .hiw-timeline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 2rem;
+      position: relative;
+      padding: 0 1rem;
+    }
+
+    .hiw-timeline-track {
+      display: flex;
+      align-items: center;
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .hiw-timeline-line {
+      position: absolute;
+      top: 50%;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      background: var(--border);
+      transform: translateY(-50%);
+    }
+
+    .hiw-timeline-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.4s var(--ease-out);
+      width: 0%;
+    }
+
+    .hiw-timeline-dots {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hiw-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out);
+      position: relative;
+    }
+
+    .hiw-dot.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      box-shadow: 0 0 0 4px var(--accent-glow);
+    }
+
+    .hiw-dot.visited {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Cards Container */
+    .hiw-cards {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0.5rem;
+      scrollbar-width: none;
+    }
+
+    .hiw-cards::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hiw-card {
+      min-width: 320px;
+      flex: 0 0 calc(100% - 2rem);
+      max-width: 520px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      scroll-snap-align: center;
+      box-shadow: var(--shadow-md);
+      transition: box-shadow 0.3s var(--ease-out);
+    }
+
+    .hiw-card:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hiw-card-step {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .hiw-card h3 {
+      margin-bottom: 0.5rem;
+    }
+
+    .hiw-card-desc {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Card Visual Mocks */
+    .hiw-visual {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* Step 1: Download Visual */
+    .hiw-setup-card {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .hiw-setup-icon {
+      width: 56px;
+      height: 56px;
+    }
+
+    .hiw-setup-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .hiw-checklist {
+      list-style: none;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .hiw-checklist li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .hiw-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .hiw-check svg {
+      width: 11px;
+      height: 11px;
+      color: white;
+    }
+
+    .hiw-setup-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.625rem 1.25rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: default;
+    }
+
+    /* Step 2: Chat Visual */
+    .hiw-chat-visual {
+      display: flex;
+      gap: 0.75rem;
+      padding: 1rem;
+    }
+
+    .hiw-chat-messages {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .hiw-chat-bubble {
+      padding: 0.625rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      max-width: 85%;
+    }
+
+    .hiw-chat-bubble.user {
+      background: #007AFF;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    [data-theme="dark"] .hiw-chat-bubble.user {
+      background: #0A84FF;
+    }
+
+    .hiw-chat-bubble.agent {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .hiw-mini-calendar {
+      width: 140px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 0.625rem;
+    }
+
+    .hiw-cal-header {
+      background: var(--accent);
+      color: white;
+      padding: 0.375rem 0.5rem;
+      font-weight: 600;
+      font-size: 0.6875rem;
+      text-align: center;
+    }
+
+    .hiw-cal-slot {
+      padding: 0.375rem 0.5rem;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      gap: 0.375rem;
+      color: var(--text-tertiary);
+    }
+
+    .hiw-cal-slot:last-child {
+      border-bottom: none;
+    }
+
+    .hiw-cal-event {
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 0.25rem 0.375rem;
+      font-weight: 600;
+      flex: 1;
+      font-size: 0.5625rem;
+      line-height: 1.3;
+    }
+
+    /* Step 3: Meeting Visual */
+    .hiw-meeting-visual {
+      overflow: hidden;
+    }
+
+    .hiw-meeting-chrome {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.6875rem;
+    }
+
+    .hiw-meeting-title {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+    }
+
+    .hiw-live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: var(--success);
+      font-weight: 600;
+      font-size: 0.625rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .hiw-live-badge::before {
       content: "";
       width: 6px;
       height: 6px;
@@ -404,2709 +1354,1069 @@
       50% { opacity: 0.4; }
     }
 
-    .meeting-body {
-      display: grid;
-      grid-template-columns: 1fr;
-      position: relative;
-    }
-
-    /* Screen Share View */
-    .screen-share {
-      background: #f7f6f3;
-      position: relative;
-      overflow: hidden;
-      cursor: none;
-    }
-
-    [data-theme="dark"] .screen-share {
-      background: #191919;
-    }
-
-    /* Browser Chrome */
-    .browser-chrome {
-      background: #dee1e6;
-      padding: 0.5rem 0.5rem 0;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    [data-theme="dark"] .browser-chrome {
-      background: #323232;
-    }
-
-    .browser-dots {
-      display: flex;
-      gap: 0.375rem;
-      padding: 0 0.25rem;
-    }
-
-    .browser-dots span {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
-
-    .browser-dots .red { background: #ff5f57; }
-    .browser-dots .yellow { background: #febc2e; }
-    .browser-dots .green { background: #28c840; }
-
-    .browser-tabs {
-      display: flex;
-      gap: 2px;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .browser-tab {
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      padding: 0.5rem 0.75rem;
-      background: #c8ccd3;
-      border: none;
-      border-radius: 8px 8px 0 0;
-      font-family: var(--font-body);
+    .hiw-sprint-table {
       font-size: 0.6875rem;
-      font-weight: 500;
-      color: #5f6368;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-      max-width: 140px;
-      overflow: hidden;
+      width: 100%;
+      border-collapse: collapse;
     }
 
-    [data-theme="dark"] .browser-tab {
-      background: #252525;
-      color: #9ca3af;
-    }
-
-    .browser-tab:hover {
-      background: #d8dce3;
-    }
-
-    [data-theme="dark"] .browser-tab:hover {
-      background: #2d2d2d;
-    }
-
-    .browser-tab.active {
-      background: #f7f6f3;
-      color: #37352f;
-    }
-
-    .browser-tab:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: -2px;
-    }
-
-    [data-theme="dark"] .browser-tab.active {
-      background: #191919;
-      color: #e4e4e7;
-    }
-
-    .browser-tab-icon {
-      width: 14px;
-      height: 14px;
-      flex-shrink: 0;
-    }
-
-    .browser-tab-title {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Tab Content */
-    .tab-content {
-      display: none;
-      height: 100%;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .screen-content {
-      position: relative;
-      aspect-ratio: 16/9;
-      cursor: none;
-    }
-
-    /* OpenClaw Subtitle Caption */
-    .caption-container {
-      position: absolute;
-      bottom: 0.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 15;
-      text-align: center;
-      pointer-events: none;
-    }
-
-    .caption-text {
-      display: inline-block;
-      background: rgba(0, 0, 0, 0.75);
-      color: white;
+    .hiw-sprint-table th,
+    .hiw-sprint-table td {
       padding: 0.375rem 0.75rem;
-      border-radius: 4px;
-      font-size: 0.6875rem;
-      line-height: 1.4;
-      max-width: 280px;
-      animation: captionFadeIn 0.25s var(--ease-out) forwards;
-      backdrop-filter: blur(4px);
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
     }
 
-    .caption-text .speaker {
-      color: var(--success);
-      font-weight: 600;
-      margin-right: 0.25rem;
-    }
-
-    @keyframes captionFadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(4px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .caption-text.fade-out {
-      animation: captionFadeOut 0.2s var(--ease-out) forwards;
-    }
-
-    @keyframes captionFadeOut {
-      from {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      to {
-        opacity: 0;
-        transform: translateY(-4px);
-      }
-    }
-
-    .notion-page {
-      padding: 1rem 1.5rem 1.5rem;
-      height: 100%;
-    }
-
-    /* Architecture Diagram Tab */
-    .arch-tab-content {
-      padding: 1rem 1.5rem;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .arch-tab-title {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #37352f;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    [data-theme="dark"] .arch-tab-title {
-      color: #ffffffcf;
-    }
-
-    .arch-diagram-mini {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      justify-content: center;
-    }
-
-    .arch-flow-mini {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-
-    .arch-node-mini {
-      background: white;
-      border: 1px solid #e9e9e7;
-      border-radius: 6px;
-      padding: 0.5rem 0.75rem;
-      text-align: center;
+    .hiw-sprint-table th {
+      font-weight: 500;
+      color: var(--text-tertiary);
       font-size: 0.625rem;
+      background: var(--bg-subtle);
     }
 
-    [data-theme="dark"] .arch-node-mini {
-      background: #2f2f2f;
-      border-color: #373737;
+    .hiw-sprint-table td {
+      color: var(--text);
     }
 
-    .arch-node-mini strong {
-      display: block;
-      color: #37352f;
-      font-weight: 600;
-    }
-
-    [data-theme="dark"] .arch-node-mini strong {
-      color: #ffffffcf;
-    }
-
-    .arch-node-mini span {
-      color: #9b9a97;
-      font-size: 0.5625rem;
-    }
-
-    .arch-node-mini.highlight {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-
-    .arch-arrow-mini {
-      color: #9b9a97;
-      font-size: 0.75rem;
-    }
-
-    /* Website Review Tab - OpenClaw Style */
-    .review-tab-content {
-      padding: 0.75rem;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      background: linear-gradient(180deg, #fef7f6 0%, #fff 50%);
-      overflow: hidden;
-    }
-
-    [data-theme="dark"] .review-tab-content {
-      background: linear-gradient(180deg, #1a1415 0%, #191919 50%);
-    }
-
-    .review-hero {
-      text-align: center;
-      padding: 0.5rem 0;
-    }
-
-    .review-logo {
-      width: 32px;
-      height: 32px;
-      margin: 0 auto 0.25rem;
-    }
-
-    .review-logo-img {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #e85d4c 0%, #c94435 100%);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-    }
-
-    .review-brand {
-      font-size: 0.875rem;
-      font-weight: 700;
-      color: var(--accent);
-      font-family: var(--font-display);
-    }
-
-    .review-tagline {
-      font-size: 0.5rem;
-      color: #9b9a97;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-top: 0.125rem;
-    }
-
-    .review-desc {
-      font-size: 0.5rem;
-      color: #6b7280;
-      line-height: 1.4;
-      margin-top: 0.25rem;
-    }
-
-    [data-theme="dark"] .review-desc {
-      color: #9ca3af;
-    }
-
-    .review-testimonial {
-      display: flex;
-      gap: 0.375rem;
-      align-items: flex-start;
-      background: white;
-      border: 1px solid #e9e9e7;
-      border-radius: 6px;
-      padding: 0.375rem;
-      font-size: 0.5rem;
-    }
-
-    [data-theme="dark"] .review-testimonial {
-      background: #252525;
-      border-color: #373737;
-    }
-
-    .review-testimonial-avatar {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #ddd;
-      flex-shrink: 0;
-    }
-
-    .review-testimonial-avatar--lobster {
-      overflow: hidden;
-    }
-    .review-testimonial-avatar--lobster img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .review-testimonial-text {
-      color: #37352f;
-      line-height: 1.3;
-    }
-
-    [data-theme="dark"] .review-testimonial-text {
-      color: #e4e4e7;
-    }
-
-    .review-testimonial-author {
-      color: var(--accent);
-      font-weight: 500;
-      margin-top: 0.125rem;
-    }
-
-    .review-quickstart {
-      background: #1e1e2e;
-      border-radius: 6px;
-      padding: 0.375rem 0.5rem;
-      font-family: var(--font-mono);
-      font-size: 0.5rem;
-      color: #a6e3a1;
-      overflow: hidden;
-    }
-
-    .review-quickstart-label {
-      font-size: 0.4375rem;
-      color: #6c7086;
-      margin-bottom: 0.25rem;
-    }
-
-    .review-quickstart-cmd {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .review-quickstart-prompt {
-      color: #f38ba8;
-    }
-
-    .review-comment {
-      background: #fff9c4;
-      border: 1px solid #ffd54f;
-      border-radius: 4px;
-      padding: 0.375rem 0.5rem;
-      font-size: 0.5rem;
-      color: #5d4037;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    [data-theme="dark"] .review-comment {
-      background: #4a4520;
-      border-color: #6b5c00;
-      color: #fcd34d;
-    }
-
-    .notion-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .notion-icon {
-      font-size: 1.25rem;
-    }
-
-    .notion-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #37352f;
-    }
-
-    [data-theme="dark"] .notion-title {
-      color: #ffffffcf;
-    }
-
-    .notion-table {
-      background: white;
-      border-radius: 4px;
-      border: 1px solid #e9e9e7;
-      overflow: hidden;
-      font-size: 0.75rem;
-    }
-
-    [data-theme="dark"] .notion-table {
-      background: #2f2f2f;
-      border-color: #373737;
-    }
-
-    .notion-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1.5fr;
-      border-bottom: 1px solid #e9e9e7;
-    }
-
-    [data-theme="dark"] .notion-row {
-      border-color: #373737;
-    }
-
-    .notion-row:last-child {
-      border-bottom: none;
-    }
-
-    .notion-row.header {
-      background: #f7f6f3;
-      font-weight: 500;
-      color: #9b9a97;
-    }
-
-    [data-theme="dark"] .notion-row.header {
-      background: #252525;
-      color: #9b9b9b;
-    }
-
-    .notion-cell {
-      padding: 0.5rem 0.75rem;
-      color: #37352f;
-      border-right: 1px solid #e9e9e7;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    [data-theme="dark"] .notion-cell {
-      color: #ffffffcf;
-      border-color: #373737;
-    }
-
-    .notion-cell:last-child {
-      border-right: none;
-    }
-
-    .notion-tag {
+    .hiw-status {
       display: inline-block;
-      padding: 0.125rem 0.375rem;
+      padding: 0.0625rem 0.375rem;
       border-radius: 3px;
+      font-size: 0.5625rem;
+      font-weight: 500;
+    }
+
+    .hiw-status.done { background: #dbeddb; color: #1e6b53; }
+    .hiw-status.progress { background: #fdecc8; color: #9a6700; }
+    .hiw-status.todo { background: #ffe2dd; color: #93291c; }
+
+    [data-theme="dark"] .hiw-status.done { background: #2b593f; color: #6ee7b7; }
+    [data-theme="dark"] .hiw-status.progress { background: #594a2b; color: #fcd34d; }
+    [data-theme="dark"] .hiw-status.todo { background: #5c2b2b; color: #fca5a5; }
+
+    .hiw-meeting-caption {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(220, 74, 58, 0.9);
+      color: white;
       font-size: 0.6875rem;
     }
 
-    .notion-tag.green {
-      background: #dbeddb;
-      color: #1e6b53;
-    }
-
-    .notion-tag.yellow {
-      background: #fdecc8;
-      color: #9a6700;
-    }
-
-    .notion-tag.red {
-      background: #ffe2dd;
-      color: #93291c;
-    }
-
-    [data-theme="dark"] .notion-tag.green {
-      background: #2b593f;
-      color: #6ee7b7;
-    }
-
-    [data-theme="dark"] .notion-tag.yellow {
-      background: #594a2b;
-      color: #fcd34d;
-    }
-
-    [data-theme="dark"] .notion-tag.red {
-      background: #5c2b2b;
-      color: #fca5a5;
-    }
-
-    /* Red Cursor */
-    .claw-cursor {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      pointer-events: none;
-      z-index: 10;
-      transition: transform 0.05s linear;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-    }
-
-    .claw-cursor svg {
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Participant Thumbnails */
-    .participant-strip {
-      position: absolute;
-      top: 0.75rem;
-      right: 0.75rem;
+    .hiw-meeting-participants {
       display: flex;
       gap: 0.5rem;
-    }
-
-    .participant-thumb {
-      width: 80px;
-      height: 60px;
-      border-radius: 6px;
-      background: var(--bg-subtle);
-      border: 2px solid transparent;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.25rem;
-      box-shadow: var(--shadow-md);
-    }
-
-    .participant-thumb.speaking {
-      border-color: var(--success);
-    }
-
-    .participant-thumb img {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .participant-thumb .lobster-mini {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      overflow: hidden;
-    }
-    .participant-thumb .lobster-mini img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .participant-thumb span {
-      font-size: 0.5625rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
-
-    .meeting-controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      padding: 1rem;
+      padding: 0.5rem 0.75rem;
       background: var(--bg-subtle);
       border-top: 1px solid var(--border);
     }
 
-    .control-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: none;
+    .hiw-participant {
       display: flex;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      background: var(--surface);
+      gap: 0.25rem;
+      font-size: 0.625rem;
       color: var(--text-secondary);
     }
 
-    .control-btn:hover {
-      background: var(--accent-light);
-      color: var(--accent);
+    .hiw-participant-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
     }
 
-    .control-btn.active {
-      background: var(--accent);
-      color: white;
+    .hiw-participant-dot.speaking {
+      background: var(--success);
     }
 
-    .control-btn.active:hover {
-      background: var(--accent-hover);
+    .hiw-participant-dot.silent {
+      background: var(--text-tertiary);
     }
 
-    .control-btn.end-call {
-      background: var(--danger);
-      color: white;
+    /* Step 4: Summary Visual */
+    .hiw-summary-card {
+      padding: 1.25rem;
     }
 
-    .control-btn.end-call:hover {
-      background: #c43d2e;
-    }
-
-    .control-btn:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    @media (max-width: 900px) {
-      .hero-visual {
-        max-width: 100%;
-      }
-    }
-    @media (max-width: 600px) {
-      .hero-content {
-        padding-inline: 0.5rem;
-      }
-    }
-
-    /* ── Buttons ────────────────────────────────────────── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 0.875rem 1.75rem;
-      border-radius: 8px;
-      font-family: var(--font-body);
-      font-size: 0.9375rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all var(--duration) var(--ease-out);
-    }
-
-    .btn:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-      box-shadow: var(--shadow-accent);
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-hover);
-      box-shadow: var(--shadow-md);
-    }
-
-    .btn-primary:active {
-      transform: translateY(1px);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .btn-secondary {
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      border-color: var(--text-tertiary);
-      background: var(--bg-subtle);
-    }
-
-    .btn-secondary:active {
-      transform: translateY(1px);
-    }
-
-    /* ── Interview Section ──────────────────────────────── */
-    .interview-section {
-      background: var(--bg-subtle);
-    }
-
-    .interview-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 4rem;
-      align-items: center;
-    }
-
-    .interview-video {
-      border-radius: 16px;
-      overflow: hidden;
-      background: var(--surface);
-      box-shadow: var(--shadow-lg);
-      aspect-ratio: 16/9;
-    }
-
-    .interview-video iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .interview-content {
-      max-width: 480px;
-    }
-
-    .interview-label {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
+    .hiw-summary-header {
       margin-bottom: 1rem;
     }
 
-    .interview-quote {
-      font-size: 1.375rem;
-      font-weight: 500;
-      line-height: 1.5;
-      color: var(--text);
-      margin-bottom: 2rem;
-      position: relative;
-      padding-left: 1.5rem;
-    }
-
-    .interview-quote::before {
-      content: "\201C";
-      position: absolute;
-      left: 0;
-      top: -0.25rem;
-      font-size: 2.5rem;
-      font-family: Georgia, serif;
-      color: var(--accent);
-      opacity: 0.4;
-      line-height: 1;
-    }
-
-    .interview-attribution {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .attribution-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: var(--accent);
-      object-fit: cover;
-    }
-
-    .attribution-name {
+    .hiw-summary-title {
+      font-size: 0.875rem;
       font-weight: 600;
       color: var(--text);
     }
 
-    .attribution-role {
+    .hiw-summary-meta {
+      font-size: 0.6875rem;
+      color: var(--text-tertiary);
+      margin-top: 0.125rem;
+    }
+
+    .hiw-summary-section {
+      margin-bottom: 0.75rem;
+    }
+
+    .hiw-summary-section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.375rem;
+    }
+
+    .hiw-summary-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .hiw-summary-list li {
+      font-size: 0.6875rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.375rem;
+      line-height: 1.4;
+    }
+
+    .hiw-summary-list li input[type="checkbox"] {
+      margin-top: 0.125rem;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .hiw-summary-files {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .hiw-summary-file {
+      font-size: 0.6875rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .hiw-summary-status {
+      margin-top: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: var(--accent-light);
+      border-radius: 6px;
+      font-size: 0.6875rem;
+      color: var(--accent);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .hiw-spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--accent-glow);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: hiwSpin 0.8s linear infinite;
+    }
+
+    @keyframes hiwSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Mobile: vertical stacking */
+    @media (max-width: 767px) {
+      .hiw-timeline-track {
+        flex-direction: column;
+        max-width: 36px;
+        align-items: center;
+      }
+
+      .hiw-timeline {
+        flex-direction: row;
+        margin-bottom: 1.5rem;
+      }
+
+      .hiw-timeline-line {
+        top: 20px;
+        bottom: 20px;
+        left: 50%;
+        right: auto;
+        width: 2px;
+        height: auto;
+        transform: translateX(-50%);
+      }
+
+      .hiw-timeline-progress {
+        width: 100% !important;
+        height: 0%;
+        transition: height 0.4s var(--ease-out);
+      }
+
+      .hiw-timeline-dots {
+        flex-direction: column;
+        height: 200px;
+      }
+
+      .hiw-cards {
+        flex-direction: column;
+        overflow-x: visible;
+        scroll-snap-type: none;
+      }
+
+      .hiw-card {
+        min-width: 0;
+        flex: none;
+        max-width: 100%;
+      }
+
+      .hiw-chat-visual {
+        flex-direction: column;
+      }
+
+      .hiw-mini-calendar {
+        width: 100%;
+      }
+    }
+
+    /* ── Comparison Section ───────────────────────────── */
+    .comparison {
+      background: var(--bg);
+    }
+
+    .comparison-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
       font-size: 0.875rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-table th {
+      font-weight: 600;
+      color: var(--text-tertiary);
+      font-size: 0.8125rem;
+    }
+
+    .comparison-table th:last-child {
+      color: var(--accent);
+    }
+
+    .comparison-table td:first-child {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .comparison-table td {
+      color: var(--text-secondary);
+    }
+
+    .comparison-table td:last-child {
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    .check-yes {
+      color: var(--success);
+    }
+
+    .check-partial {
       color: var(--text-tertiary);
     }
 
-    /* ── Scroll-locked Teaser ───────────────────────────── */
-    .teaser-scroll-container {
-      height: 200vh;
-      position: relative;
+    .check-no {
+      color: var(--text-tertiary);
     }
 
-    .teaser-sticky {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg-subtle);
-      overflow: hidden;
-    }
-
-    .teaser-content {
-      text-align: center;
-      width: 100%;
-      max-width: 900px;
-      padding: 0 2rem;
-      position: relative;
-      height: 5rem;
-    }
-
-    .teaser-line {
-      font-family: var(--font-display);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      line-height: 1.3;
-      background: linear-gradient(135deg, var(--accent) 0%, #ff6b5b 50%, #ffa07a 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      transition: opacity 0.6s var(--ease-expo), transform 0.6s var(--ease-expo);
-      position: absolute;
-      width: 100%;
-      left: 0;
-      padding: 0 2rem;
-    }
-
-    .teaser-line-1 {
-      font-size: clamp(1.5rem, 3.5vw, 2.5rem);
-      opacity: 0;
-      transform: translateY(30px);
-    }
-
-    .teaser-line-2 {
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      opacity: 0;
-      transform: translateY(30px);
-    }
-
-    .teaser-scroll-container[data-phase="1"] .teaser-line-1 {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .teaser-scroll-container[data-phase="2"] .teaser-line-1 {
-      opacity: 0;
-      transform: translateY(-40px);
-    }
-
-    .teaser-scroll-container[data-phase="2"] .teaser-line-2 {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ── Pain Points ────────────────────────────────────── */
-    .pain-section {
-      text-align: center;
-    }
-
-    .section-header {
-      max-width: 600px;
-      margin-inline: auto;
-      margin-bottom: clamp(3rem, 6vw, 4rem);
-      text-align: center;
-    }
-
-    .section-header p {
-      margin-top: 1rem;
-      margin-inline: auto;
-    }
-
-    .section-badge {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--accent);
-      background: var(--accent-light);
-      padding: 0.35rem 0.875rem;
-      border-radius: 100px;
-      margin-bottom: 1rem;
-    }
-
-    .pain-grid {
+    /* ── Features Grid ────────────────────────────────── */
+    .features-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
+      gap: 2rem;
+      margin-top: 3rem;
     }
 
-    .pain-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      text-align: left;
-      transition: all var(--duration) var(--ease-out);
+    .feature-item {
+      text-align: center;
     }
 
-    .pain-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .pain-icon {
+    .feature-icon {
       width: 48px;
       height: 48px;
-      background: var(--accent-light);
+      margin: 0 auto 1rem;
+      background: var(--bg-subtle);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 1.25rem;
-      color: var(--accent);
     }
 
-    .pain-card h4 {
+    .feature-icon svg {
+      width: 24px;
+      height: 24px;
+      color: var(--text-secondary);
+    }
+
+    .feature-item h4 {
       margin-bottom: 0.5rem;
     }
 
-    .pain-card p {
-      font-size: 0.9375rem;
-      line-height: 1.6;
-    }
-
-    /* Pain Section Layout */
-    .pain-layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3rem;
-      align-items: start;
-    }
-
-    .pain-chat-column {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .pain-cards-column {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    @media (max-width: 900px) {
-      .pain-layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Telegram-style Chat */
-    .tg-chat {
-      background: #1e1e2e;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      max-width: 320px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .tg-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.625rem;
-      padding: 0.875rem 1.25rem;
-      background: rgba(255, 255, 255, 0.04);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .tg-back {
-      display: none;
-    }
-
-    .tg-info {
-      text-align: center;
-    }
-
-    .tg-name {
-      color: rgba(255, 255, 255, 0.9);
-      font-weight: 600;
+    .feature-item p {
       font-size: 0.875rem;
-    }
-
-    .tg-status {
-      color: #4aa682;
-      font-size: 0.6875rem;
-    }
-
-    .tg-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-
-    .tg-messages {
-      padding: 1rem 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .tg-msg {
-      max-width: 88%;
-      padding: 0.625rem 0.875rem;
-      border-radius: 14px;
-      font-size: 0.8125rem;
-      line-height: 1.5;
-      position: relative;
-    }
-
-    .tg-msg.user {
-      align-self: flex-end;
-      margin-left: auto;
-      background: #3b82f6;
-      border-bottom-right-radius: 4px;
-      color: white;
-      text-align: left;
-    }
-
-    .tg-msg.bot {
-      align-self: flex-start;
-      margin-right: auto;
-      background: rgba(255, 255, 255, 0.08);
-      border-bottom-left-radius: 4px;
-      color: rgba(255, 255, 255, 0.88);
-      text-align: left;
-    }
-
-    .tg-msg .tg-time {
-      font-size: 0.625rem;
-      color: rgba(255, 255, 255, 0.35);
-      float: right;
-      margin-left: 0.5rem;
-      margin-top: 0.25rem;
-    }
-
-    .tg-msg.user .tg-time {
-      color: rgba(255, 255, 255, 0.55);
-    }
-
-    .tg-msg code {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 0.125rem 0.3rem;
-      border-radius: 3px;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-    }
-
-    .tg-msg.error {
-      background: rgba(220, 74, 58, 0.15);
-      border-left: 3px solid #e85d4c;
-    }
-
-    .tg-input {
-      padding: 0.75rem 1.25rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      background: rgba(255, 255, 255, 0.02);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .tg-input-field {
-      flex: 1;
-      font-size: 0.8125rem;
-      color: rgba(255, 255, 255, 0.25);
-    }
-
-    .tg-send {
-      width: 32px;
-      height: 32px;
-      background: #3b82f6;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-    }
-
-    /* ── Insights ────────────────────────────────────────── */
-    .insight-section {
-      background: var(--bg-subtle);
-    }
-
-    .insight-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-    }
-
-    .insight-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.5rem;
-      transition: all var(--duration) var(--ease-out);
-    }
-
-    .insight-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .insight-number {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--success);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 1rem;
-    }
-
-    .insight-card h3 {
-      margin-bottom: 0.75rem;
-    }
-
-    .insight-card p {
-      font-size: 0.9375rem;
-      line-height: 1.7;
-    }
-
-    .insight-cards-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    /* Insight Illustration - Zoom Meeting Style */
-    .insight-layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      align-items: start;
-    }
-
-    .insight-illustration {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .zoom-header {
-      background: #232323;
-      padding: 0.5rem 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .zoom-title {
-      color: white;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    .zoom-controls {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .zoom-controls span {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-
-    .zoom-controls .close { background: #ff5f57; }
-    .zoom-controls .minimize { background: #febc2e; }
-    .zoom-controls .maximize { background: #28c840; }
-
-    .zoom-meeting {
-      background: #1a1a2e;
-      position: relative;
-    }
-
-    .zoom-meeting img {
-      width: 100%;
-      display: block;
-    }
-
-    .zoom-bar {
-      background: #232323;
-      padding: 0.75rem 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-    }
-
-    .zoom-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #3d3d3d;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-    }
-
-    .zoom-btn.end {
-      background: #e53935;
-      padding: 0 1.25rem;
-      border-radius: 18px;
-      width: auto;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    @media (max-width: 900px) {
-      .insight-layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* ── CTA ──────────────────────────────────────────── */
-    .cta-section {
-      background: var(--bg-subtle);
-      text-align: center;
-    }
-
-    .cta-section p {
       margin-inline: auto;
-      margin-bottom: 2rem;
     }
 
-    /* ── Footer ────────────────────────────────────────── */
-    footer {
-      padding-block: 2rem;
-      border-top: 1px solid var(--border);
-    }
-
-    footer .container {
+    /* ── CTA Section ──────────────────────────────────── */
+    .cta-section {
+      position: relative;
+      min-height: 70vh;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .cta-bg {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+    }
+
+    .cta-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .cta-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%);
+    }
+
+    .cta-content {
+      position: relative;
+      z-index: 1;
+      padding-block: clamp(2rem, 5vw, 3rem) clamp(8rem, 20vw, 14rem);
+    }
+
+    .cta-content h2 {
+      color: white;
+      margin-bottom: 1.5rem;
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Telephone Line SVG */
+    .telephone-line {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 60%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .telephone-line svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .telephone-line-path {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 8 12;
+      animation: telephoneLineFlow 20s linear infinite;
+    }
+
+    @keyframes telephoneLineFlow {
+      from { stroke-dashoffset: 0; }
+      to { stroke-dashoffset: -1000; }
+    }
+
+    /* ── Footer ───────────────────────────────────────── */
+    footer {
+      padding: 2rem 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
     }
 
     footer p {
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       color: var(--text-tertiary);
+      margin-inline: auto;
     }
 
-    .footer-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
-
-    .footer-links a {
-      font-size: 0.875rem;
-      color: var(--text-tertiary);
-    }
-
-    .footer-links a:hover { color: var(--text-secondary); }
-
-    /* ── Steps Grid ────────────────────────────────────── */
-    .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-bottom: 3rem;
-    }
-
-    .step-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem 1.5rem;
-      text-align: center;
-    }
-
-    .step-number {
-      width: 40px;
-      height: 40px;
-      background: var(--accent);
-      color: white;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 1.125rem;
-      margin-bottom: 1rem;
-    }
-
-    .step-card h3 {
-      font-size: 1.125rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .step-card p {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
-
-    .step-card code {
-      font-family: var(--font-mono);
-      background: var(--accent-light);
-      padding: 0.1em 0.35em;
-      border-radius: 4px;
-      font-size: 0.85em;
-    }
-
+    /* ── Responsive ───────────────────────────────────── */
     @media (max-width: 768px) {
-      .steps-grid { grid-template-columns: 1fr; }
+      .nav-links {
+        display: none;
+      }
+
+      .bandwidth-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .speed-comparison {
+        order: 2;
+        flex-direction: row;
+      }
+
+      .speed-card {
+        flex: 1;
+      }
+
+      .speed-card:first-child {
+        border-radius: 16px 0 0 16px;
+        border-bottom: 1px solid var(--border);
+        border-right: none;
+      }
+
+      .speed-card:last-child {
+        border-radius: 0 16px 16px 0;
+      }
+
+      .speed-card-value {
+        font-size: 1.75rem;
+      }
+
+      .bandwidth-image-container {
+        order: 1;
+      }
+
+      .voice-wave-indicator {
+        top: 45%;
+        right: 8%;
+      }
+
+      .action-cards {
+        bottom: 8%;
+        left: 3%;
+      }
+
+      .action-card {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .comparison-table {
+        font-size: 0.75rem;
+      }
+
+      .comparison-table th,
+      .comparison-table td {
+        padding: 0.75rem 0.5rem;
+      }
     }
 
-    /* ── Chat Demo ──────────────────────────────────────── */
-    .chat-demo {
-      max-width: 560px;
-      margin-inline: auto;
-    }
-
-    .chat-window {
-      background: #1e1e2e;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .chat-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.875rem 1.25rem;
-      background: rgba(255, 255, 255, 0.04);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .chat-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .chat-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .chat-header-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .chat-header-name {
-      font-weight: 600;
-      font-size: 0.875rem;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    .chat-header-status {
-      font-size: 0.6875rem;
-      color: #4aa682;
-    }
-
-    .chat-body {
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .chat-msg {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .chat-msg-user { align-items: flex-end; }
-    .chat-msg-ai { align-items: flex-start; }
-
-    .chat-bubble {
-      max-width: 88%;
-      padding: 0.75rem 1rem;
-      border-radius: 14px;
-      font-size: 0.8125rem;
-      line-height: 1.55;
-    }
-
-    .chat-bubble-user {
-      background: #3b82f6;
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-
-    .chat-bubble-ai {
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.88);
-      border-bottom-left-radius: 4px;
-    }
-
-    .chat-cmd {
-      font-family: var(--font-mono);
-      font-weight: 600;
-      color: #fbbf24;
-    }
-
-    .chat-ai-name {
-      font-weight: 600;
-      color: #f0abfc;
-      font-size: 0.8125rem;
-      margin-bottom: 0.35rem;
-    }
-
-    .chat-bubble-ai p {
-      margin: 0.35rem 0;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    .chat-status-line {
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.9) !important;
-    }
-
-    .chat-link {
-      color: #7dd3fc;
-      text-decoration: underline;
-      word-break: break-all;
-    }
-
-    .chat-checklist {
-      list-style: none;
-      padding: 0;
-      margin: 0.5rem 0;
-    }
-
-    .chat-checklist li {
-      padding: 0.15rem 0;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.8125rem;
-    }
-
-    .chat-checklist li::before {
-      content: '\2022 ';
-      color: #4aa682;
-      margin-right: 0.35rem;
-    }
-
-    .chat-time {
-      font-size: 0.6875rem;
-      color: rgba(255, 255, 255, 0.3);
-      padding: 0 0.25rem;
-    }
-
-    .chat-input-bar {
-      padding: 0.75rem 1.25rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .chat-input-placeholder {
-      font-size: 0.8125rem;
-      color: rgba(255, 255, 255, 0.25);
-    }
-
-    /* ── Download ───────────────────────────────────────── */
-    .download-box {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-
-    .btn-download {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 1rem 2rem !important;
-      font-size: 1.0625rem !important;
-      text-decoration: none;
-    }
-
-    .download-meta {
-      margin-top: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      font-size: 0.8125rem;
-      color: var(--text-tertiary);
-    }
-
-    /* ── Setup Steps ───────────────────────────────────── */
-    .setup-steps {
-      max-width: 600px;
-      margin-inline: auto;
-    }
-
-    .setup-steps h3 {
-      font-size: 1.25rem;
-      margin-bottom: 1.25rem;
-      text-align: center;
-    }
-
-    .setup-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .setup-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-
-    .setup-icon {
-      font-size: 1.5rem;
-      flex-shrink: 0;
-      width: 2rem;
-      text-align: center;
-    }
-
-    .setup-text {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .setup-text strong {
-      font-size: 0.9375rem;
-    }
-
-    .setup-text span {
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-    }
-
-    .setup-text a {
-      color: var(--accent);
-      text-decoration: underline;
-    }
-
-    /* ── Privacy Grid ──────────────────────────────────── */
-    .privacy-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-    }
-
-    .privacy-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-    }
-
-    .privacy-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    .privacy-card h3 {
-      font-size: 1.0625rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .privacy-card p {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
-
-    @media (max-width: 768px) {
-      .privacy-grid { grid-template-columns: 1fr; }
-    }
-
-    /* ── FAQ ────────────────────────────────────────────── */
-    .faq-list {
-      max-width: 700px;
-      margin-inline: auto;
-    }
-
-    .faq-item {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 0.75rem;
-      overflow: hidden;
-      background: var(--surface);
-    }
-
-    .faq-item summary {
-      padding: 1.125rem 1.5rem;
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: 0.9375rem;
-      cursor: pointer;
-      list-style: none;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .faq-item summary::-webkit-details-marker { display: none; }
-
-    .faq-item summary::after {
-      content: '+';
-      font-size: 1.25rem;
-      color: var(--text-tertiary);
-      transition: transform 0.2s ease;
-    }
-
-    .faq-item[open] summary::after {
-      content: '\2212';
-    }
-
-    .faq-item p {
-      padding: 0 1.5rem 1.25rem;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-
-    .faq-item code {
-      font-family: var(--font-mono);
-      background: var(--accent-light);
-      padding: 0.1em 0.35em;
-      border-radius: 4px;
-      font-size: 0.85em;
-    }
-
-    .faq-item a {
-      color: var(--accent);
-    }
-
-    /* ── Animations ────────────────────────────────────── */
-    [data-animate] {
+    /* ── Scroll Animation Observer ────────────────────── */
+    .scroll-reveal {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(30px);
+      transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
     }
 
-    [data-animate].visible {
-      animation: fadeUp 0.5s var(--ease-expo) forwards;
+    .scroll-reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
-
-    @keyframes fadeUp {
-      to {
-        opacity: 1;
-        transform: none;
-      }
-    }
-
-    /* ── Responsive ────────────────────────────────────── */
-    @media (max-width: 1024px) {
-      .interview-grid {
-        grid-template-columns: 1fr;
-        gap: 3rem;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .pain-grid {
-        grid-template-columns: 1fr;
-      }
-      .insight-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .nav-links { display: none; }
-      footer .container { flex-direction: column; gap: 1rem; text-align: center; }
-      .footer-links { justify-content: center; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-      [data-animate] {
-        opacity: 1 !important;
-        transform: none !important;
-      }
-      .hero-badge svg {
-        animation: none !important;
-        opacity: 1 !important;
-      }
-    }
-
-    /* ── New Storytelling Sections ─────────────────────── */
-
-    /* Problem / 3-column grid */
-    .problem-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
-      margin-top: 3rem;
-    }
-    @media (max-width: 768px) {
-      .problem-grid { grid-template-columns: 1fr; }
-    }
-    .problem-card {
-      padding: 2rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      transition: border-color var(--duration) var(--ease-out), transform var(--duration) var(--ease-out);
-    }
-    .problem-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-    }
-    .problem-card h4 {
-      margin-bottom: 0.5rem;
-      font-size: 1.05rem;
-    }
-    .problem-card p {
-      font-size: 0.925rem;
-      line-height: 1.65;
-    }
-
-    /* Emphasis / philosophy section */
-    .emphasis-section {
-      padding-block: clamp(4rem, 8vw, 7rem);
-      text-align: center;
-    }
-    .emphasis-section h2 {
-      font-size: clamp(1.75rem, 3.5vw, 2.75rem);
-      max-width: 28ch;
-      margin-inline: auto;
-      margin-bottom: 1.25rem;
-    }
-    .emphasis-section p {
-      max-width: 52ch;
-      margin-inline: auto;
-      font-size: 1.125rem;
-      line-height: 1.7;
-    }
-    .emphasis-highlight {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    /* Capability grid (4 items) */
-    .capability-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-    @media (max-width: 640px) {
-      .capability-grid { grid-template-columns: 1fr; }
-    }
-    .capability-card {
-      padding: 2rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      transition: border-color var(--duration) var(--ease-out), transform var(--duration) var(--ease-out);
-    }
-    .capability-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-    }
-    .capability-icon {
-      width: 40px;
-      height: 40px;
-      background: var(--accent-light);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-      color: var(--accent);
-    }
-    .capability-card h4 {
-      margin-bottom: 0.5rem;
-    }
-    .capability-card p {
-      font-size: 0.925rem;
-      line-height: 1.65;
-    }
-
-    /* Timeline section */
-    .timeline-section {
-      padding-block: clamp(4rem, 10vw, 8rem);
-    }
-    .timeline {
-      max-width: 640px;
-      margin: 3rem auto 0;
-      position: relative;
-    }
-    .timeline::before {
-      content: "";
-      position: absolute;
-      left: 64px;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: var(--border);
-    }
-    @media (max-width: 640px) {
-      .timeline::before { left: 48px; }
-    }
-    .timeline-item {
-      display: flex;
-      gap: 1.5rem;
-      padding-bottom: 2.5rem;
-      position: relative;
-    }
-    .timeline-item:last-child {
-      padding-bottom: 0;
-    }
-    .timeline-time {
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--accent);
-      min-width: 56px;
-      padding-top: 0.2rem;
-      text-align: right;
-    }
-    @media (max-width: 640px) {
-      .timeline-time { min-width: 40px; font-size: 0.7rem; }
-    }
-    .timeline-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--accent);
-      flex-shrink: 0;
-      margin-top: 0.35rem;
-      position: relative;
-      z-index: 1;
-    }
-    .timeline-content h4 {
-      margin-bottom: 0.25rem;
-      font-size: 1rem;
-    }
-    .timeline-content p {
-      font-size: 0.9rem;
-      line-height: 1.6;
-    }
-    .timeline-punch {
-      text-align: center;
-      margin-top: 2.5rem;
-      font-family: var(--font-display);
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--text);
-      font-style: italic;
-      max-width: 48ch;
-      margin-inline: auto;
-    }
-
-    /* Use case cards */
-    .usecase-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-    @media (max-width: 640px) {
-      .usecase-grid { grid-template-columns: 1fr; }
-    }
-    .usecase-card {
-      padding: 2rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      transition: border-color var(--duration) var(--ease-out), transform var(--duration) var(--ease-out);
-    }
-    .usecase-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-    }
-    .usecase-card h4 {
-      margin-bottom: 0.5rem;
-      font-size: 1.05rem;
-    }
-    .usecase-card p {
-      font-size: 0.925rem;
-      line-height: 1.65;
-    }
-
-    /* Comparison (before/after) */
-    .comparison-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      margin-top: 3rem;
-    }
-    @media (max-width: 768px) {
-      .comparison-grid { grid-template-columns: 1fr; }
-    }
-    .comparison-col {
-      padding: 2rem;
-      border-radius: 12px;
-    }
-    .comparison-before {
-      background: var(--bg-subtle);
-      border: 1px solid var(--border);
-    }
-    .comparison-after {
-      background: var(--accent-light);
-      border: 1px solid rgba(220, 74, 58, 0.2);
-    }
-    .comparison-label {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 1.25rem;
-      color: var(--text-tertiary);
-    }
-    .comparison-after .comparison-label {
-      color: var(--accent);
-    }
-    .comparison-col ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .comparison-col li {
-      font-size: 0.925rem;
-      line-height: 1.6;
-      color: var(--text-secondary);
-      padding-left: 1.25rem;
-      position: relative;
-    }
-    .comparison-before li::before {
-      content: "\2013";
-      position: absolute;
-      left: 0;
-      color: var(--text-tertiary);
-    }
-    .comparison-after li::before {
-      content: "\2713";
-      position: absolute;
-      left: 0;
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    /* ── Sticky scroll capabilities ─────────────── */
-    .cap-scroll {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: clamp(2rem, 4vw, 4rem);
-      margin-top: 3rem;
-    }
-    @media (max-width: 900px) {
-      .cap-scroll { grid-template-columns: 1fr; }
-    }
-
-    /* Left: sticky visual panel */
-    .cap-visual {
-      position: sticky;
-      top: 6rem;
-      align-self: start;
-      height: fit-content;
-    }
-    @media (max-width: 900px) {
-      .cap-visual { position: static; }
-    }
-    .cap-phone {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-    }
-    .cap-phone-header {
-      background: var(--bg-subtle);
-      border-bottom: 1px solid var(--border);
-      padding: 0.75rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .cap-phone-header img {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-    }
-    .cap-phone-header span {
-      font-family: var(--font-display);
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-    .cap-phone-body {
-      padding: 1.25rem;
-      min-height: 320px;
-      transition: opacity 0.3s ease;
-    }
-
-    /* Calendar visual */
-    .cal-visual { display: block; }
-    .cal-month {
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text);
-      margin-bottom: 0.75rem;
-    }
-    .cal-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      margin-bottom: 1rem;
-    }
-    .cal-day {
-      text-align: center;
-      font-size: 0.7rem;
-      font-family: var(--font-mono);
-      color: var(--text-tertiary);
-      padding: 6px 0;
-      border-radius: 6px;
-    }
-    .cal-day.today {
-      background: var(--accent);
-      color: white;
-      font-weight: 600;
-    }
-    .cal-day.has-meeting {
-      background: var(--accent-light);
-      color: var(--accent);
-      font-weight: 500;
-    }
-    .cal-events {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .cal-event {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.6rem 0.75rem;
-      background: var(--bg-subtle);
-      border-radius: 8px;
-      border-left: 3px solid var(--accent);
-      font-size: 0.8rem;
-      transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
-    }
-    .cal-event:hover {
-      transform: translateX(4px);
-      box-shadow: var(--shadow-sm);
-    }
-    .cal-event-time {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: var(--accent);
-      font-weight: 600;
-      min-width: 44px;
-    }
-    .cal-event-title {
-      font-weight: 500;
-      color: var(--text);
-    }
-    .cal-event-badge {
-      margin-left: auto;
-      font-size: 0.6rem;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--success-light);
-      color: var(--success);
-      white-space: nowrap;
-    }
-
-    /* Right: scrolling cards */
-    .cap-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-    .cap-card {
-      padding: 1.75rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      transition: border-color 0.3s var(--ease-out), transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
-    }
-    .cap-card.active {
-      border-color: var(--accent);
-      box-shadow: var(--shadow-accent);
-      transform: translateY(-2px);
-    }
-    .cap-card-step {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 0.5rem;
-    }
-    .cap-card h4 {
-      margin-bottom: 0.4rem;
-      font-size: 1.1rem;
-    }
-    .cap-card p {
-      font-size: 0.9rem;
-      line-height: 1.6;
-    }
-
-    /* Agent support section */
-    .agent-logos {
-      display: flex;
-      gap: 2rem;
-      justify-content: center;
-      margin-top: 2rem;
-      flex-wrap: wrap;
-    }
-    .agent-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 1.5rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: 1rem;
-      color: var(--text);
-    }
-    .agent-tagline {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      font-style: italic;
-    }
-
   </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- Nav -->
+  <!-- Navigation -->
   <nav>
     <div class="container">
-      <div class="logo">
-        <div class="logo-mark"><img src="./logo.png" alt="CallingClaw"></div>
-        <span>CallingClaw</span>
-      </div>
-      <div class="nav-right">
-        <ul class="nav-links">
-          <li><a href="callingclaw-landing.html" class="active">Home</a></li>
-          <li><a href="teams.html">Teams</a></li>
-          <li><a href="features.html">Features</a></li>
-          <li><a href="vision.html">Vision</a></li>
-        </ul>
-        <a class="btn btn-primary" href="#download" style="padding: 0.625rem 1.25rem; font-size: 0.8125rem; text-decoration: none;">Download for Mac</a>
-        <button class="theme-toggle" aria-label="Toggle theme">
-          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        </button>
-      </div>
+      <a href="/" class="logo">
+        <div class="logo-mark">
+          <img src="./Assests/callingclaw-logo.png" alt="CallingClaw">
+        </div>
+        CallingClaw
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Business</a></li>
+        <li><a href="#comparison">Features</a></li>
+        <li><a href="#demo">Vision</a></li>
+        <li>
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+        </li>
+      </ul>
     </div>
   </nav>
 
-  <!-- Section 1: Hero -->
+  <!-- Hero Section -->
   <section class="hero">
-    <canvas id="heroScatter" class="hero-scatter" aria-hidden="true" role="presentation"></canvas>
+    <canvas class="hero-noise-canvas" id="heroNoiseCanvas"></canvas>
     <div class="container">
-      <div class="hero-layout">
-        <div class="hero-content">
-          <div class="hero-badge" data-animate>
-            <span class="lobster"><img src="./logo.png" alt="CallingClaw"></span>
-            macOS &middot; OpenClaw &middot; Claude Code
-          </div>
-          <h1 data-animate>Your agent gets its own <span class="gradient">meeting room.</span></h1>
-          <p class="hero-subtitle" data-animate>
-            CallingClaw gives OpenClaw and Claude Code a calendar, a voice, a screen, and a computer — so they can prepare before meetings, join on time, present work, and help you move faster.
-          </p>
-          <div class="hero-actions" data-animate>
-            <a class="btn btn-primary" href="#download" style="text-decoration: none;">Watch Demo</a>
-            <a class="btn btn-secondary" href="#download">Join Waitlist</a>
-          </div>
-        </div>
-        <div class="hero-visual" data-animate>
-          <div class="meeting-frame">
-            <div class="meeting-header">
-              <div class="meeting-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                OpenClaw is sharing screen
-              </div>
-              <div class="meeting-live">Live</div>
-            </div>
-            <div class="meeting-body">
-              <div class="screen-share" id="screenShare">
-                <!-- Browser Chrome -->
-                <div class="browser-chrome">
-                  <div class="browser-dots">
-                    <span class="red"></span>
-                    <span class="yellow"></span>
-                    <span class="green"></span>
-                  </div>
-                  <div class="browser-tabs">
-                    <button class="browser-tab active" data-tab="notion" type="button">
-                      <span class="browser-tab-icon">📋</span>
-                      <span class="browser-tab-title">Sprint Backlog</span>
-                    </button>
-                    <button class="browser-tab" data-tab="architecture" type="button">
-                      <span class="browser-tab-icon">🔧</span>
-                      <span class="browser-tab-title">System Flow</span>
-                    </button>
-                    <button class="browser-tab" data-tab="review" type="button">
-                      <span class="browser-tab-icon">🌐</span>
-                      <span class="browser-tab-title">Website Review</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Screen Content -->
-                <div class="screen-content">
-                  <!-- Red Cursor -->
-                  <div class="claw-cursor" id="clawCursor">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M5.5 3.21V20.79C5.5 21.24 5.76 21.54 6.18 21.54C6.35 21.54 6.53 21.5 6.7 21.4L11.13 18.61L13.96 23.56C14.27 24.11 14.95 24.3 15.5 24C16.05 23.69 16.24 23.01 15.94 22.46L13.11 17.51H18.5C18.95 17.51 19.25 17.25 19.25 16.83C19.25 16.66 19.21 16.48 19.11 16.31L6.61 3.21C6.45 3.07 6.27 3 6.06 3C5.72 3 5.5 3.24 5.5 3.21Z" fill="#dc4a3a"/>
-                      <path d="M5.5 3.21V20.79C5.5 21.24 5.76 21.54 6.18 21.54C6.35 21.54 6.53 21.5 6.7 21.4L11.13 18.61L13.96 23.56C14.27 24.11 14.95 24.3 15.5 24C16.05 23.69 16.24 23.01 15.94 22.46L13.11 17.51H18.5C18.95 17.51 19.25 17.25 19.25 16.83C19.25 16.66 19.21 16.48 19.11 16.31L6.61 3.21" stroke="white" stroke-width="1"/>
-                    </svg>
-                  </div>
-
-                  <!-- OpenClaw Caption/Subtitle -->
-                  <div class="caption-container" id="captionContainer">
-                    <div class="caption-text"><span class="speaker">🦞 OpenClaw:</span> Here's my current sprint plan.</div>
-                  </div>
-
-                  <!-- Tab 1: Notion Page -->
-                  <div class="tab-content active" data-content="notion">
-                    <div class="notion-page">
-                      <div class="notion-header">
-                        <span class="notion-icon">📋</span>
-                        <span class="notion-title">Sprint Backlog</span>
-                      </div>
-                      <div class="notion-table">
-                        <div class="notion-row header">
-                          <div class="notion-cell">Task</div>
-                          <div class="notion-cell">Status</div>
-                          <div class="notion-cell">Priority</div>
-                          <div class="notion-cell">Assignee</div>
-                        </div>
-                        <div class="notion-row">
-                          <div class="notion-cell">Implement voice routing</div>
-                          <div class="notion-cell"><span class="notion-tag green">Done</span></div>
-                          <div class="notion-cell">P0</div>
-                          <div class="notion-cell">🦞 OpenClaw</div>
-                        </div>
-                        <div class="notion-row">
-                          <div class="notion-cell">Add screen share API</div>
-                          <div class="notion-cell"><span class="notion-tag yellow">In Progress</span></div>
-                          <div class="notion-cell">P0</div>
-                          <div class="notion-cell">🦞 OpenClaw</div>
-                        </div>
-                        <div class="notion-row">
-                          <div class="notion-cell">Calendar integration</div>
-                          <div class="notion-cell"><span class="notion-tag red">Blocked</span></div>
-                          <div class="notion-cell">P1</div>
-                          <div class="notion-cell">Peter</div>
-                        </div>
-                        <div class="notion-row">
-                          <div class="notion-cell">Visual diff optimization</div>
-                          <div class="notion-cell"><span class="notion-tag green">Done</span></div>
-                          <div class="notion-cell">P1</div>
-                          <div class="notion-cell">🦞 OpenClaw</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Tab 2: Architecture Diagram -->
-                  <div class="tab-content" data-content="architecture">
-                    <div class="arch-tab-content">
-                      <div class="arch-tab-title">
-                        <span>🔧</span>
-                        CallingClaw System Flow
-                      </div>
-                      <div class="arch-diagram-mini">
-                        <div class="arch-flow-mini">
-                          <div class="arch-node-mini">
-                            <strong>LLM</strong>
-                            <span>Claude / GPT</span>
-                          </div>
-                          <span class="arch-arrow-mini">→</span>
-                          <div class="arch-node-mini">
-                            <strong>TTS</strong>
-                            <span>Voice Gen</span>
-                          </div>
-                          <span class="arch-arrow-mini">→</span>
-                          <div class="arch-node-mini highlight">
-                            <strong>Virtual Mic</strong>
-                            <span>BlackHole</span>
-                          </div>
-                        </div>
-                        <div class="arch-flow-mini">
-                          <div class="arch-node-mini">
-                            <strong>Screen</strong>
-                            <span>1 FPS SSIM</span>
-                          </div>
-                          <span class="arch-arrow-mini">→</span>
-                          <div class="arch-node-mini">
-                            <strong>Vision</strong>
-                            <span>Multimodal</span>
-                          </div>
-                          <span class="arch-arrow-mini">→</span>
-                          <div class="arch-node-mini highlight">
-                            <strong>Meeting</strong>
-                            <span>Zoom / Meet</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Tab 3: Website Review -->
-                  <div class="tab-content" data-content="review">
-                    <div class="review-tab-content">
-                      <!-- Hero -->
-                      <div class="review-hero">
-                        <div class="review-logo">
-                          <div class="review-logo-img">🦞</div>
-                        </div>
-                        <div class="review-brand">CallingClaw</div>
-                        <div class="review-tagline">The AI that joins your meetings.</div>
-                        <div class="review-desc">Zero-latency voice. Real-time screen share. Local-first architecture.</div>
-                      </div>
-
-                      <!-- Testimonial -->
-                      <div class="review-testimonial">
-                        <div class="review-testimonial-avatar review-testimonial-avatar--lobster"><img src="./logo.png" alt="CallingClaw"></div>
-                        <div>
-                          <div class="review-testimonial-text">"Finally, AI that can actually talk in meetings. Game changer."</div>
-                          <div class="review-testimonial-author">@steipete</div>
-                        </div>
-                      </div>
-
-                      <!-- Quick Start -->
-                      <div class="review-quickstart">
-                        <div class="review-quickstart-label"># Quick Start</div>
-                        <div class="review-quickstart-cmd">
-                          <span class="review-quickstart-prompt">$</span>
-                          <span>npx callingclaw init</span>
-                        </div>
-                      </div>
-
-                      <!-- Comment -->
-                      <div class="review-comment">
-                        <span>💡</span>
-                        <span>Suggestion: Add a live demo video in the hero section</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Participant Thumbnails -->
-                  <div class="participant-strip">
-                    <div class="participant-thumb">
-                      <img src="https://steipete.me/peter-avatar.jpg" alt="Peter" loading="lazy">
-                      <span>Peter</span>
-                    </div>
-                    <div class="participant-thumb speaking">
-                      <div class="lobster-mini"><img src="./logo.png" alt="CallingClaw"></div>
-                      <span>OpenClaw</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="meeting-controls">
-              <button class="control-btn" aria-label="Toggle microphone">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-              </button>
-              <button class="control-btn" aria-label="Toggle camera">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-              </button>
-              <button class="control-btn active" aria-label="Stop sharing">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              </button>
-              <button class="control-btn end-call" aria-label="End call">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 2: Problem + New way (merged) -->
-  <section class="section" id="problem">
-    <div class="container">
-      <div class="section-header" data-animate>
-        <h2>10x bandwidth over IM.</h2>
-        <p>Messaging works for simple prompts. It breaks down when you need to review code, explain product ideas, walk through a prototype, or give nuanced feedback.</p>
-      </div>
-      <div class="problem-grid">
-        <div class="problem-card" data-animate>
-          <h4>Too much explaining</h4>
-          <p>Complex work takes too many messages to explain clearly. You spend more time describing what you see than moving the work forward.</p>
-        </div>
-        <div class="problem-card" data-animate>
-          <h4>Too hard to review</h4>
-          <p>Drafts, prototypes, and local work are awkward to share in chat. Pushing half-finished work to the public internet just for a review is insecure.</p>
-        </div>
-        <div class="problem-card" data-animate>
-          <h4>Humans become the bottleneck</h4>
-          <p>AI can work fast, but people spend too much time relaying context, confirming details, and coordinating next steps through text.</p>
-        </div>
-      </div>
-      <p class="timeline-punch" data-animate style="margin-top: 3rem;">Work with AI in meetings, not just in chat. Voice + screen share lets you communicate more context in less time.</p>
-    </div>
-  </section>
-
-  <!-- Section 3: How it works — sticky scroll -->
-  <section class="section" id="capabilities">
-    <div class="container">
-      <div class="section-header" data-animate>
-        <h2>Give it a calendar and a meeting room. It handles the rest.</h2>
-      </div>
-      <div class="cap-scroll">
-        <!-- Left: sticky calendar visual -->
-        <div class="cap-visual" data-animate>
-          <div class="cap-phone">
-            <div class="cap-phone-header">
-              <img src="./logo.png" alt="CallingClaw">
-              <span>CallingClaw Calendar</span>
-            </div>
-            <div class="cap-phone-body">
-              <div class="cal-visual">
-                <div class="cal-month">April 2026</div>
-                <div class="cal-grid">
-                  <div class="cal-day" style="color:var(--text-tertiary);font-weight:600;">M</div>
-                  <div class="cal-day" style="color:var(--text-tertiary);font-weight:600;">T</div>
-                  <div class="cal-day" style="color:var(--text-tertiary);font-weight:600;">W</div>
-                  <div class="cal-day" style="color:var(--text-tertiary);font-weight:600;">T</div>
-                  <div class="cal-day" style="color:var(--text-tertiary);font-weight:600;">F</div>
-                  <div class="cal-day" style="color:var(--text-tertiary);font-weight:600;">S</div>
-                  <div class="cal-day" style="color:var(--text-tertiary);font-weight:600;">S</div>
-                  <div class="cal-day"></div><div class="cal-day"></div>
-                  <div class="cal-day">1</div>
-                  <div class="cal-day today">2</div>
-                  <div class="cal-day has-meeting">3</div>
-                  <div class="cal-day">4</div>
-                  <div class="cal-day">5</div>
-                  <div class="cal-day">6</div>
-                  <div class="cal-day has-meeting">7</div>
-                  <div class="cal-day has-meeting">8</div>
-                  <div class="cal-day has-meeting">9</div>
-                  <div class="cal-day has-meeting">10</div>
-                  <div class="cal-day">11</div>
-                  <div class="cal-day">12</div>
-                  <div class="cal-day">13</div>
-                  <div class="cal-day has-meeting">14</div>
-                  <div class="cal-day">15</div>
-                  <div class="cal-day has-meeting">16</div>
-                  <div class="cal-day">17</div>
-                  <div class="cal-day">18</div>
-                  <div class="cal-day">19</div>
-                </div>
-                <div class="cal-events">
-                  <div class="cal-event">
-                    <div class="cal-event-time">10:00</div>
-                    <div class="cal-event-title">Sprint Review</div>
-                    <div class="cal-event-badge">Prep ready</div>
-                  </div>
-                  <div class="cal-event">
-                    <div class="cal-event-time">14:00</div>
-                    <div class="cal-event-title">Design Crit</div>
-                    <div class="cal-event-badge">Auto-join</div>
-                  </div>
-                  <div class="cal-event">
-                    <div class="cal-event-time">16:30</div>
-                    <div class="cal-event-title">Vendor Demo</div>
-                    <div class="cal-event-badge">AI attends</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: scrolling capability cards -->
-        <div class="cap-cards">
-          <div class="cap-card active" data-animate data-cap="calendar">
-            <div class="cap-card-step">Step 1</div>
-            <h4>It reads your calendar and prepares</h4>
-            <p>CallingClaw syncs with Google Calendar. Before each meeting, it pulls relevant docs, past notes, and project context — so it walks in ready, not cold.</p>
-          </div>
-          <div class="cap-card" data-animate data-cap="join">
-            <div class="cap-card-step">Step 2</div>
-            <h4>It joins the meeting on time</h4>
-            <p>When the meeting starts, it enters Google Meet or Zoom as a real participant. No manual launch, no reminders needed. It just shows up.</p>
-          </div>
-          <div class="cap-card" data-animate data-cap="present">
-            <div class="cap-card-step">Step 3</div>
-            <h4>It presents your work on screen share</h4>
-            <p>It talks, shares your screen, walks through prototypes, code, websites, or docs — and operates the computer live. Review local work directly, no need to publish anything to the public internet.</p>
-          </div>
-          <div class="cap-card" data-animate data-cap="iterate">
-            <div class="cap-card-step">Step 4</div>
-            <h4>It captures feedback and ships the next version</h4>
-            <p>Screenshots key moments, records decisions, revises the work based on your feedback, sends the updated version to your team, and starts the next iteration — all before the meeting ends.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 5: Use cases -->
-  <section class="section" id="use-cases">
-    <div class="container">
-      <div class="section-header" data-animate>
-        <span class="section-badge">Built for high-density work</span>
-        <h2>Use Cases</h2>
-      </div>
-      <div class="usecase-grid">
-        <div class="usecase-card" data-animate>
-          <h4>Review work live</h4>
-          <p>Talk through a prototype, PRD, website, or codebase while your agent presents and updates it. Voice + screen is a higher-bandwidth review than IM links and screenshots.</p>
-        </div>
-        <div class="usecase-card" data-animate>
-          <h4>Get work reported back to you</h4>
-          <p>Let your agent show what it built, while you guide and critique in real time. Like a standup with your digital teammate.</p>
-        </div>
-        <div class="usecase-card" data-animate>
-          <h4>Save time on demo and research calls</h4>
-          <p>Send your agent into repetitive demo meetings and research calls. It presents, collects the signal, and summarizes. You step in only for key questions.</p>
-        </div>
-        <div class="usecase-card" data-animate>
-          <h4>Iterate faster</h4>
-          <p>Capture feedback once, revise immediately, and keep the next experiment moving. Every meeting ends with the next version, not just notes.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 6: Before / After -->
-  <section class="section">
-    <div class="container">
-      <div class="section-header" data-animate>
-        <h2>Before and after CallingClaw</h2>
-      </div>
-      <div class="comparison-grid" data-animate>
-        <div class="comparison-col comparison-before">
-          <div class="comparison-label">Before</div>
-          <ul>
-            <li>Explain everything in chat, message by message</li>
-            <li>Share half-finished work through public links</li>
-            <li>Lose context between tools and conversations</li>
-            <li>Spend hours on follow-up and coordination</li>
-            <li>Keep humans in every loop</li>
-          </ul>
-        </div>
-        <div class="comparison-col comparison-after">
-          <div class="comparison-label">After</div>
-          <ul>
-            <li>Explain once with voice + screen share</li>
-            <li>Review local work without publishing it</li>
-            <li>Let AI prepare and join meetings with full context</li>
-            <li>Turn meetings into action automatically</li>
-            <li>Keep humans focused on judgment, not coordination</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 9: Supported agents -->
-  <section class="emphasis-section" id="agents">
-    <div class="container" data-animate>
-      <h2>Bring the agent you already use.</h2>
-      <p>CallingClaw works with the agents you already trust — and gives them a better place to work.</p>
-      <div class="agent-logos">
-        <div class="agent-logo">
-          <img src="./logo.png" alt="OpenClaw" width="28" height="28" style="border-radius: 6px;">
-          OpenClaw
-        </div>
-        <div class="agent-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          Claude Code
-        </div>
-      </div>
-      <p class="agent-tagline">Your agent brain stays the same. CallingClaw gives it a meeting room.</p>
-    </div>
-  </section>
-
-  <!-- Section: Security -->
-  <section class="section" id="security">
-    <div class="container">
-      <div class="section-header" data-animate>
-        <h2>Runs on your computer. Not ours.</h2>
-        <p>No cloud servers, no public links, no data leaving your machine unless you choose to.</p>
-      </div>
-      <div class="problem-grid">
-        <div class="problem-card" data-animate>
-          <h4>100% local</h4>
-          <p>CallingClaw runs entirely on your Mac. The backend is localhost. Audio streams directly to your AI provider. We never see or store your data.</p>
-        </div>
-        <div class="problem-card" data-animate>
-          <h4>No public links needed</h4>
-          <p>Review prototypes, code, and local files over screen share. Nothing gets pushed to the public internet just for a review. Your drafts stay private.</p>
-        </div>
-        <div class="problem-card" data-animate>
-          <h4>Open source</h4>
-          <p>CallingClaw is fully open source. Inspect the code, verify the security model, contribute improvements. Bring your own API keys — revoke access anytime.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 12: FAQ -->
-  <section class="section" id="faq">
-    <div class="container">
-      <div class="section-header" data-animate>
-        <span class="section-badge">FAQ</span>
-        <h2>Frequently Asked Questions</h2>
-      </div>
-      <div class="faq-list" data-animate>
-        <details class="faq-item">
-          <summary>What meeting platforms are supported?</summary>
-          <p>Google Meet and Zoom. CallingClaw joins as a real participant — no browser extensions needed.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Do I need OpenClaw or Claude Code?</summary>
-          <p>Neither is required. CallingClaw works standalone with just an API key. With OpenClaw or Claude Code, you get deeper features: project-aware meeting prep, deep reasoning, and richer context.</p>
-        </details>
-        <details class="faq-item">
-          <summary>What does it cost?</summary>
-          <p>CallingClaw is free during beta. You pay your AI provider directly. Gemini 3.1 Flash Live (default) costs ~$0.02/min.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Can other people tell it's AI?</summary>
-          <p>Yes. CallingClaw joins with its own name and speaks with an AI voice. Transparent by design.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Is my meeting data private?</summary>
-          <p>Yes. Everything runs locally. Audio streams directly to your AI provider. We never see, store, or process your meeting data.</p>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <!-- Download -->
-  <section class="cta-section" id="download">
-    <div class="container" data-animate>
-      <h2>Get CallingClaw</h2>
-      <p>Free during beta. Runs locally on your Mac. You bring your own API keys.</p>
-      <div class="download-box">
-        <a class="btn btn-primary btn-download" href="https://github.com/nicekwell/CallingClaw/releases/latest" target="_blank" rel="noopener">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <h1>Your Agent Needs <span class="gradient">a Seat,</span><br>Not a Notepad <span class="gradient">in meetings</span></h1>
+      <p class="hero-subtitle">CallingClaw joins video calls with full memory of your work — ready to discuss, present, and act.</p>
+      <div class="hero-actions">
+        <a href="https://github.com/XEasonChan/callingclaw/releases/latest" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:6px"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></svg>
           Download for macOS
         </a>
-        <div class="download-meta">
-          <span>macOS 13+ &middot; Apple Silicon recommended</span>
-          <span>Free beta &middot; Bring your own API keys</span>
+        <a href="https://github.com/XEasonChan/callingclaw" target="_blank" rel="noopener" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:6px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero Image with GSAP ScrollTrigger animation -->
+    <div class="hero-image-wrapper">
+      <div class="hero-pin-spacer" id="heroPinSpacer">
+        <div class="hero-image-container" id="heroImageContainer">
+          <img src="./Assests/HeroPage_Background.png" alt="AI agent in meeting room" class="hero-image" id="heroImage">
+
+        <!-- Demo Panel that slides up -->
+        <div class="hero-demo-panel">
+          <div class="demo-panel-header">
+            <div class="demo-panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              OpenClaw is sharing screen
+            </div>
+            <div class="demo-panel-live">LIVE</div>
+          </div>
+
+          <div class="demo-panel-tabs">
+            <button class="demo-panel-tab active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <path d="M8 10h8M8 14h6"/>
+              </svg>
+              Sprint Backlog
+            </button>
+            <button class="demo-panel-tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+              </svg>
+              System Flow
+            </button>
+            <button class="demo-panel-tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4M12 8h.01"/>
+              </svg>
+              Website Review
+            </button>
+          </div>
+
+          <div class="demo-panel-content">
+            <div class="demo-panel-table-header">
+              <span class="demo-panel-table-icon">📋</span>
+              <span class="demo-panel-table-title">Sprint Backlog</span>
+              <div class="demo-panel-avatars">
+                <div class="demo-avatar">Peter</div>
+                <div class="demo-avatar active">
+                  <img src="./Assests/callingclaw-logo.png" width="16" height="16" style="object-fit:contain;" alt="">
+                </div>
+              </div>
+            </div>
+
+            <div class="demo-mini-table">
+              <div class="demo-mini-row header">
+                <div class="demo-mini-cell">Task</div>
+                <div class="demo-mini-cell">Status</div>
+                <div class="demo-mini-cell">Priority</div>
+                <div class="demo-mini-cell">Assignee</div>
+              </div>
+              <div class="demo-mini-row">
+                <div class="demo-mini-cell">Implement voice routing</div>
+                <div class="demo-mini-cell"><span class="demo-tag green">Done</span></div>
+                <div class="demo-mini-cell">P0</div>
+                <div class="demo-mini-cell"><img src="./Assests/callingclaw-logo.png" class="claw-icon-sm" alt=""> OpenClaw</div>
+              </div>
+              <div class="demo-mini-row">
+                <div class="demo-mini-cell">Add screen share API</div>
+                <div class="demo-mini-cell"><span class="demo-tag yellow">In Progress</span></div>
+                <div class="demo-mini-cell">P0</div>
+                <div class="demo-mini-cell"><img src="./Assests/callingclaw-logo.png" class="claw-icon-sm" alt=""> OpenClaw</div>
+              </div>
+              <div class="demo-mini-row">
+                <div class="demo-mini-cell">Calendar integration</div>
+                <div class="demo-mini-cell"><span class="demo-tag yellow">Blocked</span></div>
+                <div class="demo-mini-cell">P1</div>
+                <div class="demo-mini-cell">Peter</div>
+              </div>
+              <div class="demo-mini-row">
+                <div class="demo-mini-cell">Visual diff optimization</div>
+                <div class="demo-mini-cell"><span class="demo-tag green">Done</span></div>
+                <div class="demo-mini-cell">P1</div>
+                <div class="demo-mini-cell"><img src="./Assests/callingclaw-logo.png" class="claw-icon-sm" alt=""> OpenClaw</div>
+              </div>
+            </div>
+
+            <!-- Speech bubble -->
+            <div class="demo-speech-bubble">
+              <img src="./Assests/callingclaw-logo.png" width="20" height="20" style="object-fit:contain;" alt="">
+              OpenClaw: Screen share API is in progress now.
+            </div>
+          </div>
+
+          <div class="demo-panel-controls">
+            <button class="demo-control-btn" title="Mic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </button>
+            <button class="demo-control-btn" title="Camera">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 7l-7 5 7 5V7z"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </button>
+            <button class="demo-control-btn screen-share" title="Screen share">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </button>
+            <button class="demo-control-btn end" title="End call">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Meeting Harness Section -->
+  <section class="meeting-harness">
+    <div class="container">
+      <h2><span class="underline">Meeting Harness</span> for Your Full time Agents</h2>
+      <p class="meeting-harness-subtitle">Gives your agent a calendar, a voice, and computer access</p>
+      <div class="badge-row">
+        <span class="badge accent">
+          <img src="./Assests/logo-openclaw.png" class="claw-icon" alt="">
+          OpenClaw
+        </span>
+        <span class="badge">
+          <img src="./Assests/logo-claude-code.png" class="claw-icon" alt="">
+          Claude Code
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5× Bandwidth Section -->
+  <section class="bandwidth">
+    <div class="container">
+      <!-- Centered Header -->
+      <div class="bandwidth-header">
+        <h2><span class="highlight">5×</span> More Bandwidth for AI Interaction</h2>
+        <p>Point at the screen and say what to change — your agent sees exactly where and what. No need to deploy to the public web for review — everything stays local.</p>
+      </div>
+
+      <div class="bandwidth-content">
+        <!-- Speed Comparison (Wispr Flow style) -->
+        <div class="speed-comparison">
+          <div class="speed-card">
+            <div class="speed-card-label">Keyboard</div>
+            <div class="speed-card-value">45 wpm</div>
+            <div class="speed-card-text">the homepage tagline needs to be changed, and also fix the...</div>
+          </div>
+          <div class="speed-card voice">
+            <div class="speed-card-label">CallingClaw</div>
+            <div class="speed-card-value">220 wpm + context</div>
+            <div class="speed-card-text">Three different points that didn't align with our requirement, the first one is the home page tagline, then the feature section layout, and finally the CTA button color.</div>
+            <div class="speed-attachments">
+              <span class="speed-attachment">
+                <span class="speed-attachment-icon">📸</span>
+                screenshot_landing.png
+              </span>
+              <span class="speed-attachment">
+                <span class="speed-attachment-icon">📄</span>
+                index.html
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bandwidth-image-container">
+          <img src="./Assests/Bandwidth_Benefit.png" alt="AI agent pointing at screen" class="bandwidth-image">
+
+          <!-- Voice Wave Indicator -->
+          <div class="voice-wave-indicator">
+            <div class="voice-wave">
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+            </div>
+          </div>
+
+          <!-- Action Status Cards -->
+          <div class="action-cards">
+            <div class="action-card">
+              <div class="action-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="M21 21l-4.35-4.35"/>
+                </svg>
+              </div>
+              Retrieving relevant memory
+            </div>
+            <div class="action-card">
+              <div class="action-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="16 18 22 12 16 6"/>
+                  <polyline points="8 6 2 12 8 18"/>
+                </svg>
+              </div>
+              Updating Code of Homepage
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="hiw-header">
+        <h2>How It Works</h2>
+        <p>From setup to execution in four steps</p>
+      </div>
+
+      <!-- Timeline -->
+      <div class="hiw-timeline">
+        <div class="hiw-timeline-track">
+          <div class="hiw-timeline-line">
+            <div class="hiw-timeline-progress" id="hiwProgress"></div>
+          </div>
+          <div class="hiw-timeline-dots">
+            <button class="hiw-dot active" data-step="0">1</button>
+            <button class="hiw-dot" data-step="1">2</button>
+            <button class="hiw-dot" data-step="2">3</button>
+            <button class="hiw-dot" data-step="3">4</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards -->
+      <div class="hiw-cards" id="hiwCards">
+
+        <!-- Step 1: Download & Configure -->
+        <div class="hiw-card" data-hiw-card="0">
+          <span class="hiw-card-step">Step 1</span>
+          <h3>Download &amp; Configure</h3>
+          <p class="hiw-card-desc">Download the desktop app and follow the guided permission setup. One click, and your agent has a seat in every meeting.</p>
+          <div class="hiw-visual">
+            <div class="hiw-setup-card">
+              <svg class="hiw-setup-icon" viewBox="0 0 60 60" fill="none">
+                <ellipse cx="30" cy="34" rx="13" ry="16" fill="#E63946"/>
+                <path d="M17 28C10 20 14 10 22 16C18 12 24 9 27 14" fill="#E63946"/>
+                <path d="M43 28C50 20 46 10 38 16C42 12 36 9 33 14" fill="#E63946"/>
+                <circle cx="25" cy="28" r="2.5" fill="white"/>
+                <circle cx="35" cy="28" r="2.5" fill="white"/>
+                <circle cx="25" cy="28" r="1.2" fill="#1C1C1E"/>
+                <circle cx="35" cy="28" r="1.2" fill="#1C1C1E"/>
+              </svg>
+              <div class="hiw-setup-title">Give a meeting room to your OpenClaw</div>
+              <ul class="hiw-checklist">
+                <li><span class="hiw-check"><svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg></span> Screen Recording</li>
+                <li><span class="hiw-check"><svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg></span> Microphone</li>
+                <li><span class="hiw-check"><svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg></span> Accessibility</li>
+                <li><span class="hiw-check"><svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg></span> Connect OpenClaw</li>
+              </ul>
+              <div class="hiw-setup-btn">Get Started</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Book with Your Agent -->
+        <div class="hiw-card" data-hiw-card="1">
+          <span class="hiw-card-step">Step 2</span>
+          <h3>Book with Your Agent</h3>
+          <p class="hiw-card-desc">Schedule meetings naturally through Telegram or the CLI. Your agent prepares context from recent work automatically.</p>
+          <div class="hiw-visual">
+            <div class="hiw-chat-visual">
+              <div class="hiw-chat-messages">
+                <div class="hiw-chat-bubble user">Lets review the landing page tomorrow at 3pm</div>
+                <div class="hiw-chat-bubble agent">Got it! I'll prepare the meeting with context from our recent work. Meeting scheduled &#10003;</div>
+              </div>
+              <div class="hiw-mini-calendar">
+                <div class="hiw-cal-header">Tomorrow</div>
+                <div class="hiw-cal-slot"><span>1:00</span></div>
+                <div class="hiw-cal-slot"><span>2:00</span></div>
+                <div class="hiw-cal-slot">
+                  <span>3:00</span>
+                  <div class="hiw-cal-event">Landing Page Review</div>
+                </div>
+                <div class="hiw-cal-slot"><span>4:00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Join & Collaborate -->
+        <div class="hiw-card" data-hiw-card="2">
+          <span class="hiw-card-step">Step 3</span>
+          <h3>Join &amp; Collaborate</h3>
+          <p class="hiw-card-desc">Your agent joins with full memory of your work — ready to discuss, present documents, and control the screen in real time.</p>
+          <div class="hiw-visual hiw-meeting-visual">
+            <div class="hiw-meeting-chrome">
+              <div class="hiw-meeting-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                Sprint Planning — CallingClaw
+              </div>
+              <span class="hiw-live-badge">Live</span>
+            </div>
+            <table class="hiw-sprint-table">
+              <thead>
+                <tr><th>Task</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Voice routing</td><td><span class="hiw-status done">Done</span></td></tr>
+                <tr><td>Screen share API</td><td><span class="hiw-status progress">In Progress</span></td></tr>
+                <tr><td>Calendar integration</td><td><span class="hiw-status todo">To Do</span></td></tr>
+              </tbody>
+            </table>
+            <div class="hiw-meeting-caption">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+              CallingClaw: Here's our current sprint status
+            </div>
+            <div class="hiw-meeting-participants">
+              <span class="hiw-participant"><span class="hiw-participant-dot speaking"></span> CallingClaw</span>
+              <span class="hiw-participant"><span class="hiw-participant-dot silent"></span> You</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Get Results & Keep Going -->
+        <div class="hiw-card" data-hiw-card="3">
+          <span class="hiw-card-step">Step 4</span>
+          <h3>Get Results &amp; Keep Going</h3>
+          <p class="hiw-card-desc">After the meeting, receive a structured summary with action items, key decisions, and referenced files. Your agent starts executing autonomously.</p>
+          <div class="hiw-visual">
+            <div class="hiw-summary-card">
+              <div class="hiw-summary-header">
+                <div class="hiw-summary-title">Meeting Summary — Landing Page Review</div>
+                <div class="hiw-summary-meta">32 min &bull; 2 participants</div>
+              </div>
+              <div class="hiw-summary-section">
+                <div class="hiw-summary-section-title">&#x1F4CB; Action Items</div>
+                <ul class="hiw-summary-list">
+                  <li><input type="checkbox" disabled> Update hero copy to emphasize local-first</li>
+                  <li><input type="checkbox" disabled> Add comparison table vs. cloud alternatives</li>
+                  <li><input type="checkbox" disabled> Record a 60-second demo video</li>
+                </ul>
+              </div>
+              <div class="hiw-summary-section">
+                <div class="hiw-summary-section-title">&#x1F4A1; Key Decisions</div>
+                <ul class="hiw-summary-list">
+                  <li>&bull; Keep single-page layout, no multi-page navigation</li>
+                  <li>&bull; Prioritize speed over animations for first launch</li>
+                </ul>
+              </div>
+              <div class="hiw-summary-section">
+                <div class="hiw-summary-section-title">&#x1F4CE; Files Referenced</div>
+                <div class="hiw-summary-files">
+                  <span class="hiw-summary-file"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> site-1/index.html</span>
+                  <span class="hiw-summary-file"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> design/brand-guide.md</span>
+                </div>
+              </div>
+              <div class="hiw-summary-status">
+                <span class="hiw-spinner"></span>
+                Agent is working on action items...
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Section -->
+  <section class="comparison" id="comparison">
+    <div class="container">
+      <div class="comparison-header">
+        <h2>Comparison</h2>
+        <p style="color:var(--text-secondary); margin-top:0.75rem; max-width:640px;">Traditional meeting AI records and transcribes. Pika talks and acts in the cloud. CallingClaw runs locally — with full access to your machine.</p>
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>Otter / Fireflies</th>
+            <th>Pika Stream</th>
+            <th>CallingClaw</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Real-time voice participation</td>
+            <td class="check-no">—</td>
+            <td class="check-partial">Partial</td>
+            <td class="check-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Screen perception & sharing</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">Yes (Vision + DOM)</td>
+          </tr>
+          <tr>
+            <td>Computer control</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">Voice-triggered</td>
+          </tr>
+          <tr>
+            <td>Meeting preparation</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">Automatic</td>
+          </tr>
+          <tr>
+            <td>Cross-meeting memory</td>
+            <td class="check-partial">Transcript only</td>
+            <td class="check-partial">Limited</td>
+            <td class="check-yes">Local file memory</td>
+          </tr>
+          <tr>
+            <td>Live action item capture</td>
+            <td class="check-partial">Post-meeting only</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">Real-time</td>
+          </tr>
+          <tr>
+            <td>Data privacy</td>
+            <td class="check-partial">Cloud</td>
+            <td class="check-partial">Cloud</td>
+            <td class="check-yes">100% local processing</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Features Grid -->
+      <div class="features-grid" id="features">
+        <div class="feature-item scroll-reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <h4>Open Source</h4>
+          <p>Fully open source under Apache 2.0 license</p>
+        </div>
+        <div class="feature-item scroll-reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <h4>Free</h4>
+          <p>No subscription, no usage fees, just bring your API keys</p>
+        </div>
+        <div class="feature-item scroll-reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </div>
+          <h4>100% Local</h4>
+          <p>All processing happens on your machine</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-bg">
+      <img src="./Assests/Footer_CTA_new.png" alt="Video call your agent">
+    </div>
+
+    <!-- Telephone Line Animation -->
+    <div class="telephone-line">
+      <svg viewBox="0 0 600 400" preserveAspectRatio="none">
+        <path class="telephone-line-path" d="
+          M 600 50
+          Q 500 60, 480 100
+          Q 450 160, 400 180
+          Q 350 200, 320 240
+          Q 280 290, 220 320
+          Q 160 350, 100 360
+          Q 40 370, -20 380
+          L -50 400
+        "/>
+      </svg>
+    </div>
+
+    <div class="container">
+      <div class="cta-content">
+        <h2>Video Call Your Agent Now</h2>
+        <p style="color:rgba(255,255,255,0.7); margin-top:0.5rem; margin-bottom:1.5rem;">Download desktop as agentware to setup: GUI for human and authorization, CLI for agent running.</p>
+        <div class="cta-actions">
+          <a href="https://github.com/XEasonChan/callingclaw/releases/latest" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:6px"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></svg>
+            Download for macOS
+          </a>
+          <a href="https://github.com/XEasonChan/callingclaw" target="_blank" rel="noopener" class="btn btn-secondary" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:6px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            View on GitHub
+          </a>
         </div>
       </div>
     </div>
@@ -3115,531 +2425,518 @@
   <!-- Footer -->
   <footer>
     <div class="container">
-      <p>CallingClaw — Your agent gets its own meeting room</p>
-      <ul class="footer-links">
-        <li><a href="callingclaw-landing.html">Home</a></li>
-        <li><a href="teams.html">Teams</a></li>
-        <li><a href="features.html">Features</a></li>
-        <li><a href="vision.html">Vision</a></li>
-        <li><a href="#faq">FAQ</a></li>
-        <li><a href="#security">Security</a></li>
-      </ul>
+      <p>© 2025 CallingClaw. Open source under Apache 2.0 License.</p>
     </div>
   </footer>
 
   <script>
-    // Theme toggle
-    (function() {
-      const html = document.documentElement;
-      const stored = localStorage.getItem('callingclaw-theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = stored || (prefersDark ? 'dark' : 'light');
-      html.setAttribute('data-theme', theme);
+    // ── Theme Toggle ──────────────────────────────────────
+    const html = document.documentElement;
+    const savedTheme = localStorage.getItem('theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    html.setAttribute('data-theme', savedTheme);
 
-      document.querySelector('.theme-toggle').addEventListener('click', function() {
-        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        localStorage.setItem('callingclaw-theme', next);
+    // Theme toggle button
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
       });
-    })();
+    }
 
-    // Scroll-triggered animations
-    (function() {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.querySelectorAll('[data-animate]').forEach(el => el.classList.add('visible'));
-        return;
-      }
+    // ── Scroll Reveal Animation ───────────────────────────
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
 
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, index) => {
-          if (entry.isIntersecting) {
-            setTimeout(() => {
-              entry.target.classList.add('visible');
-            }, index * 50);
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-
-      document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
-    })();
-
-    // Smooth scroll
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
         }
       });
+    }, observerOptions);
+
+    // ── Lenis Smooth Scroll ─────────────────────────────────────────────
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
     });
 
-    // Easter egg for the curious
-    console.log('%c🦞 CallingClaw', 'font-size: 24px; font-weight: bold; color: #dc4a3a;');
-    console.log('%cLocal-first AI meeting intelligence.', 'color: #dc4a3a; font-size: 12px;');
-    console.log('%cInterested in the architecture? Scroll to #architecture', 'font-size: 11px; color: #6b7280;');
+    // Integrate Lenis with GSAP ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update);
 
-    // Capability cards: activate on scroll
-    (function() {
-      const cards = document.querySelectorAll('.cap-card');
-      if (!cards.length) return;
-      const capObs = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            cards.forEach(c => c.classList.remove('active'));
-            entry.target.classList.add('active');
-          }
-        });
-      }, { rootMargin: '-30% 0px -30% 0px', threshold: 0.3 });
-      cards.forEach(card => capObs.observe(card));
-    })();
-
-    // FAQ accordion
-    document.querySelectorAll('.faq-item').forEach(item => {
-      item.addEventListener('toggle', function() {
-        if (this.open) {
-          document.querySelectorAll('.faq-item').forEach(other => {
-            if (other !== this) other.open = false;
-          });
-        }
-      });
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
     });
 
-    // Teaser scroll-locked animation
-    (function() {
-      const container = document.getElementById('teaserScroll');
-      if (!container || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        if (container) container.setAttribute('data-phase', '2');
-        return;
-      }
+    gsap.ticker.lagSmoothing(0);
 
-      function updatePhase() {
-        const rect = container.getBoundingClientRect();
-        const scrollProgress = -rect.top / (rect.height - window.innerHeight);
+    // ── Hero GSAP ScrollTrigger Animation ─────────────────────────────────
+    const heroImageContainer = document.getElementById('heroImageContainer');
+    const heroImage = document.getElementById('heroImage');
+    const heroDemoPanel = heroImageContainer?.querySelector('.hero-demo-panel');
+    const heroPinSpacer = document.getElementById('heroPinSpacer');
+    const heroWrapper = document.querySelector('.hero-image-wrapper');
 
-        if (scrollProgress < 0) {
-          container.setAttribute('data-phase', '0');
-        } else if (scrollProgress < 0.5) {
-          container.setAttribute('data-phase', '1');
-        } else {
-          container.setAttribute('data-phase', '2');
+    if (heroImageContainer && heroDemoPanel && heroPinSpacer && heroImage && heroWrapper) {
+      // Register ScrollTrigger plugin
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Ensure demo panel starts hidden below center
+      gsap.set(heroDemoPanel, {
+        xPercent: -50,
+        y: '100%',
+        opacity: 0,
+      });
+
+      // Create timeline for the hero animation
+      const heroTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: heroPinSpacer,
+          start: 'bottom bottom',
+          end: '+=100%',
+          pin: true,
+          scrub: 0.5,
+          anticipatePin: 1,
         }
-      }
+      });
 
-      window.addEventListener('scroll', updatePhase, { passive: true });
-      updatePhase();
-    })();
+      // Both phases run in parallel and finish together at 100% scroll:
+      // Image expands to full viewport width
+      heroTl.to(heroImageContainer, {
+        width: '100vw',
+        borderRadius: '16px',
+        duration: 1,
+        ease: 'none'
+      }, 0);
 
-    // Tab switching and auto-presentation with captions
-    (function() {
-      const tabs = document.querySelectorAll('.browser-tab');
-      const contents = document.querySelectorAll('.tab-content');
-      const captionContainer = document.getElementById('captionContainer');
-      const cursor = document.getElementById('clawCursor');
-      const screenContent = document.querySelector('.screen-content');
+      // Demo panel slides from below to vertical center, fading in
+      // Starts at 0% and finishes at 100% — synced with image expansion
+      heroTl.to(heroDemoPanel, {
+        y: '-50%',       // vertically centered (top:50% + y:-50%)
+        opacity: 1,
+        duration: 1,
+        ease: 'none'
+      }, 0);
+    }
 
-      // Manual tab switching
+    // Observe bandwidth image
+    const bandwidthImage = document.querySelector('.bandwidth-image-container');
+    if (bandwidthImage) observer.observe(bandwidthImage);
+
+    // Observe bandwidth left (for chat bubble)
+    const bandwidthContent = document.querySelector('.bandwidth-content');
+    if (bandwidthContent) observer.observe(bandwidthContent);
+
+    // ── Action Cards Scroll Animation ─────────────────────────
+    const actionCards = document.querySelectorAll('.action-card');
+    const bandwidthSection = document.querySelector('.bandwidth-image-container');
+
+    if (actionCards.length && bandwidthSection) {
+      const updateActionCardsAnimation = () => {
+        const rect = bandwidthSection.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+
+        // Calculate scroll progress within the bandwidth section
+        const sectionProgress = Math.max(0, Math.min(1,
+          (windowHeight - rect.top) / (windowHeight + rect.height * 0.5)
+        ));
+
+        // First card (Retrieving) appears at 30-50% progress
+        const card1Progress = Math.max(0, Math.min(1, (sectionProgress - 0.3) / 0.2));
+        actionCards[0].style.opacity = card1Progress;
+        actionCards[0].style.transform = `translateY(${40 * (1 - card1Progress)}px)`;
+
+        // Second card (Updating) appears at 50-70% progress
+        const card2Progress = Math.max(0, Math.min(1, (sectionProgress - 0.5) / 0.2));
+        actionCards[1].style.opacity = card2Progress;
+        actionCards[1].style.transform = `translateY(${40 * (1 - card2Progress)}px)`;
+      };
+
+      window.addEventListener('scroll', () => {
+        requestAnimationFrame(updateActionCardsAnimation);
+      }, { passive: true });
+      updateActionCardsAnimation();
+    }
+
+    // Observe scroll reveal elements
+    document.querySelectorAll('.scroll-reveal').forEach(el => {
+      observer.observe(el);
+    });
+
+    // ── Tab Switching ─────────────────────────────────────
+    const tabs = document.querySelectorAll('.browser-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    function switchTab(tabName) {
       tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-          switchTab(this.dataset.tab);
-        });
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
       });
-
-      function switchTab(targetTab) {
-        tabs.forEach(t => t.classList.remove('active'));
-        document.querySelector(`[data-tab="${targetTab}"]`).classList.add('active');
-        contents.forEach(c => c.classList.remove('active'));
-        document.querySelector(`[data-content="${targetTab}"]`).classList.add('active');
-      }
-
-      // Caption helper
-      function showCaption(text) {
-        if (!captionContainer) return;
-        const caption = captionContainer.querySelector('.caption-text');
-        if (caption) {
-          caption.classList.add('fade-out');
-          setTimeout(() => {
-            caption.innerHTML = '<span class="speaker">🦞 OpenClaw:</span> ' + text;
-            caption.classList.remove('fade-out');
-            caption.style.animation = 'none';
-            caption.offsetHeight;
-            caption.style.animation = 'captionFadeIn 0.25s var(--ease-out) forwards';
-          }, 150);
-        }
-      }
-
-      // Cursor animation helper
-      function animateCursorTo(x, y, duration = 800) {
-        return new Promise(resolve => {
-          cursor.style.transition = `left ${duration}ms cubic-bezier(0.25, 0.1, 0.25, 1), top ${duration}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
-          cursor.style.left = x + 'px';
-          cursor.style.top = y + 'px';
-          setTimeout(resolve, duration);
-        });
-      }
-
-      function simulateClick() {
-        return new Promise(resolve => {
-          cursor.style.transform = 'scale(0.85)';
-          setTimeout(() => {
-            cursor.style.transform = 'scale(1)';
-            setTimeout(resolve, 100);
-          }, 150);
-        });
-      }
-
-      // Auto-presentation sequence with step-by-step captions
-      async function runPresentation() {
-        if (!screenContent || !cursor) return;
-
-        const rect = screenContent.getBoundingClientRect();
-        const screenRect = { width: rect.width, height: rect.height };
-
-        await new Promise(r => setTimeout(r, 2000));
-
-        while (true) {
-          // === NOTION TAB ===
-          showCaption("Here's our current sprint plan.");
-          await animateCursorTo(screenRect.width * 0.3, screenRect.height * 0.35, 800);
-          await new Promise(r => setTimeout(r, 1200));
-
-          showCaption("Voice routing is done — that was the hard part.");
-          await animateCursorTo(screenRect.width * 0.4, screenRect.height * 0.42, 600);
-          await new Promise(r => setTimeout(r, 1500));
-
-          showCaption("Screen share API is in progress now.");
-          await animateCursorTo(screenRect.width * 0.45, screenRect.height * 0.5, 500);
-          await new Promise(r => setTimeout(r, 1500));
-
-          showCaption("Let me show you the architecture...");
-          await new Promise(r => setTimeout(r, 800));
-
-          // === MOVE TO ARCHITECTURE TAB ===
-          const archTab = document.querySelector('[data-tab="architecture"]');
-          const screenContentRect = screenContent.getBoundingClientRect();
-          const archTabRect = archTab.getBoundingClientRect();
-          const archX = archTabRect.left - screenContentRect.left + archTabRect.width / 2;
-          const archY = archTabRect.top - screenContentRect.top + archTabRect.height / 2;
-
-          await animateCursorTo(archX, archY, 600);
-          await simulateClick();
-          switchTab('architecture');
-          await new Promise(r => setTimeout(r, 400));
-
-          showCaption("This is our system architecture.");
-          await animateCursorTo(screenRect.width * 0.2, screenRect.height * 0.4, 800);
-          await new Promise(r => setTimeout(r, 1200));
-
-          showCaption("LLM generates responses, TTS converts to speech...");
-          await animateCursorTo(screenRect.width * 0.5, screenRect.height * 0.4, 900);
-          await new Promise(r => setTimeout(r, 1500));
-
-          showCaption("The key is BlackHole for zero-latency audio routing.");
-          await animateCursorTo(screenRect.width * 0.8, screenRect.height * 0.4, 700);
-          await new Promise(r => setTimeout(r, 1800));
-
-          showCaption("Now let me check our website design...");
-          await new Promise(r => setTimeout(r, 800));
-
-          // === MOVE TO REVIEW TAB ===
-          const reviewTab = document.querySelector('[data-tab="review"]');
-          const reviewTabRect = reviewTab.getBoundingClientRect();
-          const reviewX = reviewTabRect.left - screenContentRect.left + reviewTabRect.width / 2;
-          const reviewY = reviewTabRect.top - screenContentRect.top + reviewTabRect.height / 2;
-
-          await animateCursorTo(reviewX, reviewY, 600);
-          await simulateClick();
-          switchTab('review');
-          await new Promise(r => setTimeout(r, 400));
-
-          showCaption("This is the current landing page.");
-          await animateCursorTo(screenRect.width * 0.35, screenRect.height * 0.5, 800);
-          await new Promise(r => setTimeout(r, 1200));
-
-          showCaption("I think we should add a demo video here.");
-          await animateCursorTo(screenRect.width * 0.4, screenRect.height * 0.7, 600);
-          await new Promise(r => setTimeout(r, 1800));
-
-          showCaption("Let me go back to the plan...");
-          await new Promise(r => setTimeout(r, 800));
-
-          // === BACK TO NOTION ===
-          const notionTab = document.querySelector('[data-tab="notion"]');
-          const notionTabRect = notionTab.getBoundingClientRect();
-          const notionX = notionTabRect.left - screenContentRect.left + notionTabRect.width / 2;
-          const notionY = notionTabRect.top - screenContentRect.top + notionTabRect.height / 2;
-
-          await animateCursorTo(notionX, notionY, 600);
-          await simulateClick();
-          switchTab('notion');
-
-          showCaption("Any questions about the plan?");
-          await animateCursorTo(screenRect.width * 0.5, screenRect.height * 0.45, 800);
-          await new Promise(r => setTimeout(r, 2500));
-        }
-      }
-
-      // Start auto-presentation if not reduced motion
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        cursor.style.left = '50%';
-        cursor.style.top = '40%';
-        runPresentation();
-      }
-
-      // Manual cursor override when user interacts
-      let userInteracting = false;
-      screenContent.addEventListener('mouseenter', () => {
-        userInteracting = true;
-        cursor.style.transition = 'left 0.08s ease-out, top 0.08s ease-out';
+      tabContents.forEach(content => {
+        content.classList.toggle('active', content.dataset.tabContent === tabName);
       });
+    }
 
-      let rafId = null;
-      let targetX = 0;
-      let targetY = 0;
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
 
-      screenContent.addEventListener('mousemove', (e) => {
-        if (!userInteracting) return;
-        const rect = screenContent.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const maxX = rect.width - 20;
-        const maxY = rect.height - 20;
-        targetX = Math.max(0, Math.min(x, maxX));
-        targetY = Math.max(0, Math.min(y, maxY));
+    // ── Demo Animation ────────────────────────────────────
+    const cursor = document.getElementById('clawCursor');
+    const screenContent = document.getElementById('screenContent');
+    const captionContainer = document.getElementById('captionContainer');
 
-        if (!rafId) {
-          rafId = requestAnimationFrame(() => {
-            cursor.style.left = targetX + 'px';
-            cursor.style.top = targetY + 'px';
-            rafId = null;
-          });
-        }
+    function showCaption(text) {
+      if (!captionContainer) return;
+      const caption = captionContainer.querySelector('.caption-text');
+      if (caption) {
+        caption.classList.add('fade-out');
+        setTimeout(() => {
+          caption.innerHTML = `<span class="speaker">CallingClaw:</span> ${text}`;
+          caption.classList.remove('fade-out');
+        }, 200);
+      }
+    }
+
+    function animateCursorTo(x, y, duration = 800) {
+      return new Promise(resolve => {
+        cursor.style.transition = `left ${duration}ms cubic-bezier(0.25, 0.1, 0.25, 1), top ${duration}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
+        cursor.style.left = x + 'px';
+        cursor.style.top = y + 'px';
+        setTimeout(resolve, duration);
       });
+    }
 
-      screenContent.addEventListener('mouseleave', () => {
-        userInteracting = false;
-        if (rafId) {
-          cancelAnimationFrame(rafId);
-          rafId = null;
-        }
+    function simulateClick() {
+      return new Promise(resolve => {
+        cursor.style.transform = 'scale(0.85)';
+        // Add visible click ripple
+        const ripple = document.createElement('div');
+        ripple.style.cssText = 'position:absolute;width:24px;height:24px;border-radius:50%;background:rgba(220,74,58,0.4);transform:scale(0);pointer-events:none;left:50%;top:50%;margin-left:-12px;margin-top:-12px;';
+        ripple.animate([
+          { transform: 'scale(0)', opacity: 1 },
+          { transform: 'scale(2.5)', opacity: 0 }
+        ], { duration: 400, easing: 'ease-out' });
+        cursor.appendChild(ripple);
+        setTimeout(() => {
+          cursor.style.transform = 'scale(1)';
+          ripple.remove();
+          setTimeout(resolve, 100);
+        }, 150);
       });
-    })();
+    }
 
-    // ── Hero Scatter: Flowing Audio Waveform Ribbons ───────────────
-    (function() {
-      const canvas = document.getElementById('heroScatter');
+    async function runPresentation() {
+      if (!screenContent || !cursor) { console.warn('No screenContent or cursor'); return; }
+
+      // Wait for demo panel to be fully visible and have non-zero dimensions
+      await new Promise(r => setTimeout(r, 1000));
+      const rect = screenContent.getBoundingClientRect();
+      if (rect.width < 10 || rect.height < 10) { console.warn('screenContent too small:', rect); return; }
+      const screenRect = { width: rect.width, height: rect.height };
+      cursor.style.display = 'block';
+
+      // Initialize cursor position
+      cursor.style.left = (screenRect.width * 0.5) + 'px';
+      cursor.style.top = (screenRect.height * 0.5) + 'px';
+
+      while (true) {
+        // Tab 1: Sprint Backlog
+        showCaption("Here's our current sprint plan.");
+        await animateCursorTo(screenRect.width * 0.3, screenRect.height * 0.35, 800);
+        await new Promise(r => setTimeout(r, 1200));
+
+        showCaption("Voice routing is done — that was the hard part.");
+        await animateCursorTo(screenRect.width * 0.4, screenRect.height * 0.42, 600);
+        await new Promise(r => setTimeout(r, 1500));
+
+        showCaption("Screen share API is in progress now.");
+        await animateCursorTo(screenRect.width * 0.45, screenRect.height * 0.5, 500);
+        await new Promise(r => setTimeout(r, 1500));
+
+        showCaption("Let me show you the architecture...");
+        await new Promise(r => setTimeout(r, 800));
+
+        // Move to Architecture tab
+        const archTab = document.querySelector('[data-tab="architecture"]');
+        const screenContentRect = screenContent.getBoundingClientRect();
+        const archTabRect = archTab.getBoundingClientRect();
+        const archX = archTabRect.left - screenContentRect.left + archTabRect.width / 2;
+        const archY = archTabRect.top - screenContentRect.top + archTabRect.height / 2;
+
+        await animateCursorTo(archX, archY, 600);
+        await simulateClick();
+        switchTab('architecture');
+        await new Promise(r => setTimeout(r, 400));
+
+        showCaption("This is our system architecture.");
+        await animateCursorTo(screenRect.width * 0.2, screenRect.height * 0.4, 800);
+        await new Promise(r => setTimeout(r, 1200));
+
+        showCaption("LLM generates responses, TTS converts to speech...");
+        await animateCursorTo(screenRect.width * 0.5, screenRect.height * 0.4, 900);
+        await new Promise(r => setTimeout(r, 1500));
+
+        showCaption("The key is BlackHole for zero-latency audio routing.");
+        await animateCursorTo(screenRect.width * 0.8, screenRect.height * 0.4, 700);
+        await new Promise(r => setTimeout(r, 1800));
+
+        showCaption("Now let me check our website design...");
+        await new Promise(r => setTimeout(r, 800));
+
+        // Move to Review tab
+        const reviewTab = document.querySelector('[data-tab="review"]');
+        const reviewTabRect = reviewTab.getBoundingClientRect();
+        const reviewX = reviewTabRect.left - screenContentRect.left + reviewTabRect.width / 2;
+        const reviewY = reviewTabRect.top - screenContentRect.top + reviewTabRect.height / 2;
+
+        await animateCursorTo(reviewX, reviewY, 600);
+        await simulateClick();
+        switchTab('review');
+        await new Promise(r => setTimeout(r, 400));
+
+        showCaption("This is the current landing page.");
+        await animateCursorTo(screenRect.width * 0.35, screenRect.height * 0.5, 800);
+        await new Promise(r => setTimeout(r, 1200));
+
+        showCaption("I think we should add a demo video here.");
+        await animateCursorTo(screenRect.width * 0.4, screenRect.height * 0.7, 600);
+        await new Promise(r => setTimeout(r, 1800));
+
+        showCaption("Let me go back to the plan...");
+        await new Promise(r => setTimeout(r, 800));
+
+        // Back to Notion tab
+        const notionTab = document.querySelector('[data-tab="notion"]');
+        const notionTabRect = notionTab.getBoundingClientRect();
+        const notionX = notionTabRect.left - screenContentRect.left + notionTabRect.width / 2;
+        const notionY = notionTabRect.top - screenContentRect.top + notionTabRect.height / 2;
+
+        await animateCursorTo(notionX, notionY, 600);
+        await simulateClick();
+        switchTab('notion');
+
+        showCaption("Any questions about the plan?");
+        await animateCursorTo(screenRect.width * 0.5, screenRect.height * 0.45, 800);
+        await new Promise(r => setTimeout(r, 2500));
+      }
+    }
+
+    // Start presentation when scroll animation completes (demo panel fully visible)
+    // Uses scroll position check instead of IntersectionObserver (which fails on pinned elements)
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      let presentationStarted = false;
+      window.addEventListener('scroll', function checkDemoVisible() {
+        if (presentationStarted) return;
+        const panel = document.querySelector('.hero-demo-panel');
+        if (!panel) return;
+        // Check if panel has opacity > 0.8 (animation nearly complete)
+        const opacity = parseFloat(window.getComputedStyle(panel).opacity);
+        if (opacity > 0.8) {
+          presentationStarted = true;
+          window.removeEventListener('scroll', checkDemoVisible);
+          setTimeout(runPresentation, 300);
+        }
+      }, { passive: true });
+    }
+
+    // ── Hero Noise Canvas Animation ─────────────────────────────────────
+    // Adapted from 21st.dev/community/components/Scottclayton3d/music-reactive-hero-section
+    // Stripped audio reactivity; colors tuned to CallingClaw coral-red + cream palette
+    ;(function initHeroNoise() {
+      const canvas = document.getElementById('heroNoiseCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const hero = canvas.closest('.hero');
-      const dpr = window.devicePixelRatio || 1;
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let animId = null;
+      let filmGrain = null;
 
-      // Mouse tracking
-      let mx = -9999, my = -9999;
-      hero.addEventListener('mousemove', e => {
-        const rect = canvas.getBoundingClientRect();
-        mx = (e.clientX - rect.left) * dpr;
-        my = (e.clientY - rect.top) * dpr;
-      });
-      hero.addEventListener('mouseleave', () => { mx = -9999; my = -9999; });
-      hero.addEventListener('touchmove', e => {
-        const t = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
-        mx = (t.clientX - rect.left) * dpr;
-        my = (t.clientY - rect.top) * dpr;
-      }, { passive: true });
-      hero.addEventListener('touchend', () => { mx = -9999; my = -9999; });
-
-      function getColors() {
-        const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-        return {
-          r: dark ? 232 : 230, g: dark ? 93 : 57, b: dark ? 76 : 70,
-          baseAlpha: dark ? 0.07 : 0.05,
-          maxAlpha: dark ? 0.45 : 0.40
-        };
+      // ── Theme-aware colors ──────────────────────────
+      function getThemeColors() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        return isDark
+          ? { bg: [17, 17, 19],      // #111113
+              wave1: { h: 8,   s: 72, l: 42 }, // deep coral
+              wave2: { h: 15,  s: 55, l: 35 }, // warm brick
+              wave3: { h: 25,  s: 40, l: 28 }, // muted amber
+              wave4: { h: 350, s: 50, l: 32 }, // dark rose
+              grainAlpha: 0.018 }
+          : { bg: [250, 249, 249],    // #faf9f9
+              wave1: { h: 8,   s: 68, l: 62 }, // coral red #dc4a3a tint
+              wave2: { h: 18,  s: 55, l: 72 }, // peach / cream-coral
+              wave3: { h: 30,  s: 45, l: 78 }, // warm cream
+              wave4: { h: 355, s: 50, l: 68 }, // soft rose
+              grainAlpha: 0.012 };
       }
 
-      // ── Bezier path utilities ──
-      function cubicBezier(t, p0, p1, p2, p3) {
-        const u = 1 - t;
-        return u*u*u*p0 + 3*u*u*t*p1 + 3*u*t*t*p2 + t*t*t*p3;
-      }
-      function cubicBezierDeriv(t, p0, p1, p2, p3) {
-        const u = 1 - t;
-        return 3*u*u*(p1-p0) + 6*u*t*(p2-p1) + 3*t*t*(p3-p2);
-      }
-      function pointOnPath(t, path) {
-        return {
-          x: cubicBezier(t, path.x0, path.x1, path.x2, path.x3),
-          y: cubicBezier(t, path.y0, path.y1, path.y2, path.y3)
-        };
-      }
-      function normalOnPath(t, path) {
-        const dx = cubicBezierDeriv(t, path.x0, path.x1, path.x2, path.x3);
-        const dy = cubicBezierDeriv(t, path.y0, path.y1, path.y2, path.y3);
-        const len = Math.hypot(dx, dy) || 1;
-        return { nx: -dy / len, ny: dx / len };
-      }
-
-      // ── Ribbon definitions (regenerated on resize) ──
-      let ribbons = [];
-      let W = 0, H = 0;
-
-      function buildRibbons() {
-        W = canvas.width;
-        H = canvas.height;
-        ribbons = [];
-
-        // Ribbon 1: sweeping curve from top-left, spiraling gently toward center-right
-        ribbons.push({
-          path: {
-            x0: W * -0.05, y0: H * 0.15,
-            x1: W * 0.15,  y1: H * -0.1,
-            x2: W * 0.55,  y2: H * 0.35,
-            x3: W * 0.30,  y3: H * 0.65
-          },
-          barCount: 90,
-          barSpacing: 0.008,
-          maxBarH: 18 * dpr,
-          seed: 42
-        });
-
-        // Ribbon 2: flowing from bottom-right up and across
-        ribbons.push({
-          path: {
-            x0: W * 1.08, y0: H * 0.90,
-            x1: W * 0.80, y1: H * 1.05,
-            x2: W * 0.50, y2: H * 0.55,
-            x3: W * 0.75, y3: H * 0.25
-          },
-          barCount: 85,
-          barSpacing: 0.009,
-          maxBarH: 16 * dpr,
-          seed: 137
-        });
-
-        // Ribbon 3: subtle arc across the top area
-        ribbons.push({
-          path: {
-            x0: W * 0.20, y0: H * -0.05,
-            x1: W * 0.45, y1: H * 0.12,
-            x2: W * 0.70, y2: H * 0.08,
-            x3: W * 1.05, y3: H * 0.18
-          },
-          barCount: 70,
-          barSpacing: 0.010,
-          maxBarH: 12 * dpr,
-          seed: 271
-        });
-
-        // Ribbon 4: gentle curve near bottom-left
-        ribbons.push({
-          path: {
-            x0: W * -0.08, y0: H * 0.75,
-            x1: W * 0.15,  y1: H * 0.90,
-            x2: W * 0.35,  y2: H * 0.70,
-            x3: W * 0.55,  y3: H * 0.85
-          },
-          barCount: 60,
-          barSpacing: 0.011,
-          maxBarH: 14 * dpr,
-          seed: 89
-        });
-
-        // Pre-compute bar data for each ribbon
-        ribbons.forEach(rib => {
-          rib.bars = [];
-          let rng = rib.seed;
-          const pseudoRandom = () => { rng = (rng * 16807 + 0) % 2147483647; return (rng & 0x7fffffff) / 0x7fffffff; };
-          for (let i = 0; i < rib.barCount; i++) {
-            const t = 0.02 + i * rib.barSpacing;
-            if (t > 0.98) break;
-            const pt = pointOnPath(t, rib.path);
-            const n = normalOnPath(t, rib.path);
-            // Bar height: audio-like pattern (louder in middle, quieter at edges)
-            const envelope = Math.sin(i / rib.barCount * Math.PI);
-            const noise = 0.3 + 0.7 * pseudoRandom();
-            const h = rib.maxBarH * envelope * noise;
-            rib.bars.push({ t, x: pt.x, y: pt.y, nx: n.nx, ny: n.ny, h, phase: pseudoRandom() * Math.PI * 2 });
+      // ── Film Grain Generator ────────────────────────
+      class FilmGrain {
+        constructor(w, h) {
+          this.w = w; this.h = h;
+          this.offCanvas = document.createElement('canvas');
+          this.offCanvas.width = w; this.offCanvas.height = h;
+          this.offCtx = this.offCanvas.getContext('2d');
+          this.frame = 0;
+          this.imageData = this.offCtx.createImageData(w, h);
+          this._generate();
+        }
+        _generate() {
+          const d = this.imageData.data;
+          for (let i = 0; i < d.length; i += 4) {
+            const v = Math.random() * 255;
+            d[i] = d[i+1] = d[i+2] = v; d[i+3] = 255;
           }
-        });
-      }
-
-      function resize() {
-        const rect = hero.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        canvas.style.width = rect.width + 'px';
-        canvas.style.height = rect.height + 'px';
-        buildRibbons();
-      }
-
-      // Visibility
-      let visible = true;
-      const obs = new IntersectionObserver(entries => { visible = entries[0].isIntersecting; }, { threshold: 0.05 });
-      obs.observe(hero);
-
-      const PROX_RADIUS = 160 * dpr;
-      const BAR_WIDTH = 2.5 * dpr;
-      let frame = 0;
-
-      function draw(ts) {
-        if (!visible) { requestAnimationFrame(draw); return; }
-        if (++frame % 2 !== 0) { requestAnimationFrame(draw); return; }
-
-        const c = getColors();
-        ctx.clearRect(0, 0, W, H);
-
-        ribbons.forEach(rib => {
-          // Draw the ribbon's path as a faint guide line
-          const guidePath = rib.path;
-          ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${c.baseAlpha * 0.5})`;
-          ctx.lineWidth = 1 * dpr;
-          ctx.beginPath();
-          ctx.moveTo(guidePath.x0, guidePath.y0);
-          ctx.bezierCurveTo(guidePath.x1, guidePath.y1, guidePath.x2, guidePath.y2, guidePath.x3, guidePath.y3);
-          ctx.stroke();
-
-          // Draw waveform bars along the path
-          rib.bars.forEach(bar => {
-            const dist = Math.hypot(mx - bar.x, my - bar.y);
-            const prox = Math.max(0, 1 - dist / PROX_RADIUS);
-            const alpha = c.baseAlpha + prox * (c.maxAlpha - c.baseAlpha);
-
-            // Idle pulse
-            let pulse = 0;
-            if (!reducedMotion) {
-              const pulseAmp = 2 * dpr + prox * 4 * dpr;
-              pulse = Math.sin(ts / 2500 * Math.PI * 2 + bar.phase) * pulseAmp;
+          this.offCtx.putImageData(this.imageData, 0, 0);
+        }
+        update() {
+          this.frame++;
+          if (this.frame % 3 === 0) { // refresh every 3 frames for perf
+            const d = this.imageData.data;
+            const t = this.frame * 0.01;
+            for (let i = 0; i < d.length; i += 4) {
+              const grain = Math.random();
+              const x = (i >> 2) % this.w;
+              const y = ((i >> 2) / this.w) | 0;
+              const pattern = Math.sin(x * 0.01 + t) * Math.cos(y * 0.01 - t);
+              const v = (grain * 0.85 + pattern * 0.15) * 255;
+              d[i] = d[i+1] = d[i+2] = v;
             }
-
-            const h = Math.max(2 * dpr, bar.h + pulse);
-            ctx.fillStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${alpha})`;
-
-            // Draw bar perpendicular to the curve
-            ctx.save();
-            ctx.translate(bar.x, bar.y);
-            ctx.rotate(Math.atan2(bar.ny, bar.nx));
-            ctx.fillRect(-BAR_WIDTH / 2, -h / 2, BAR_WIDTH, h);
-            ctx.restore();
-          });
-        });
-
-        requestAnimationFrame(draw);
+            this.offCtx.putImageData(this.imageData, 0, 0);
+          }
+        }
+        apply(ctx, alpha, hue) {
+          ctx.save();
+          // Soft overlay grain — single pass, light touch
+          ctx.globalCompositeOperation = 'overlay';
+          ctx.globalAlpha = alpha;
+          ctx.drawImage(this.offCanvas, 0, 0);
+          // Subtle color tint
+          ctx.globalCompositeOperation = 'overlay';
+          ctx.globalAlpha = alpha * 0.3;
+          ctx.fillStyle = `hsla(${hue}, 45%, 55%, 1)`;
+          ctx.fillRect(0, 0, this.w, this.h);
+          ctx.restore();
+        }
+        resize(w, h) {
+          this.w = w; this.h = h;
+          this.offCanvas.width = w; this.offCanvas.height = h;
+          this.imageData = this.offCtx.createImageData(w, h);
+          this._generate();
+        }
       }
 
-      // Init
-      resize();
-      requestAnimationFrame(draw);
-      requestAnimationFrame(() => canvas.classList.add('visible'));
+      // ── Wave config ─────────────────────────────────
+      const waves = [
+        { amp: 40, freq: 0.003, speed: 0.010, offset: 0,              opacity: 0.22 },
+        { amp: 32, freq: 0.004, speed: 0.008, offset: Math.PI * 0.5,  opacity: 0.16 },
+        { amp: 25, freq: 0.005, speed: 0.013, offset: Math.PI,        opacity: 0.12 },
+        { amp: 42, freq: 0.002, speed: 0.005, offset: Math.PI * 1.5,  opacity: 0.09 },
+      ];
 
-      let resizeTimer;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(resize, 150);
+      let time = 0;
+
+      // ── Resize handler ──────────────────────────────
+      function resize() {
+        canvas.width  = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        if (filmGrain) filmGrain.resize(canvas.width, canvas.height);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      filmGrain = new FilmGrain(canvas.width, canvas.height);
+
+      // ── Render loop ─────────────────────────────────
+      function draw() {
+        animId = requestAnimationFrame(draw);
+        const W = canvas.width, H = canvas.height;
+        const colors = getThemeColors();
+
+        // Clear with background color
+        const [br, bg, bb] = colors.bg;
+        ctx.fillStyle = `rgb(${br},${bg},${bb})`;
+        ctx.fillRect(0, 0, W, H);
+
+        // Gentle ambient intensity (sine-based breathing, no audio)
+        const breath  = 0.35 + Math.sin(time * 0.008) * 0.15;
+        const breath2 = 0.25 + Math.sin(time * 0.012) * 0.10;
+
+        time++;
+
+        // ── Draw waves (centered in canvas, behind tagline) ──
+        const baseY = H * 0.5;
+
+        waves.forEach((w, i) => {
+          w.offset += w.speed;
+          const waveColor = [colors.wave1, colors.wave2, colors.wave3, colors.wave4][i];
+          const dynamicAmp = w.amp * (1 + breath * 1.2);
+          const alpha = w.opacity * (0.6 + breath * 0.4);
+
+          const grad = ctx.createLinearGradient(0, baseY - dynamicAmp, 0, baseY + dynamicAmp * 2);
+          grad.addColorStop(0, `hsla(${waveColor.h}, ${waveColor.s}%, ${waveColor.l}%, 0)`);
+          grad.addColorStop(0.4, `hsla(${waveColor.h}, ${waveColor.s}%, ${waveColor.l + 8}%, ${alpha})`);
+          grad.addColorStop(1, `hsla(${waveColor.h}, ${waveColor.s}%, ${waveColor.l}%, 0)`);
+
+          ctx.beginPath();
+          for (let x = -20; x <= W + 20; x += 3) {
+            const y1 = Math.sin(x * w.freq + w.offset) * dynamicAmp;
+            const y2 = Math.sin(x * w.freq * 2 + w.offset * 1.5) * (dynamicAmp * 0.2 * breath2);
+            const y3 = Math.sin(x * w.freq * 0.5 + w.offset * 0.7) * (dynamicAmp * 0.35);
+            const y = baseY + y1 + y2 + y3;
+            if (x === -20) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.lineTo(W + 20, H);
+          ctx.lineTo(-20, H);
+          ctx.closePath();
+          ctx.fillStyle = grad;
+          ctx.fill();
+        });
+
+        // ── Film grain ────────────────────────────────
+        filmGrain.update();
+        filmGrain.apply(ctx, colors.grainAlpha, 10); // hue ~10 = coral tint
+
+        // ── Vignette ──────────────────────────────────
+        const vig = ctx.createRadialGradient(W/2, H/2, W * 0.25, W/2, H/2, W * 0.85);
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(0.6, `rgba(${br},${bg},${bb},0.15)`);
+        vig.addColorStop(1, `rgba(${br},${bg},${bb},0.5)`);
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+
+        // ── Subtle flicker (barely perceptible) ──────
+        const flicker = Math.sin(time * 0.3) * 0.003 + Math.random() * 0.002;
+        ctx.fillStyle = `rgba(255,255,255,${flicker})`;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      draw();
+
+      // ── Cleanup on theme change (reuses same canvas) ──
+      const themeObs = new MutationObserver(() => {
+        // colors recalculated each frame via getThemeColors(), no action needed
       });
+      themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+      // Respect reduced motion
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        cancelAnimationFrame(animId);
+        // Draw one static frame
+        draw();
+        cancelAnimationFrame(animId);
+      }
     })();
   </script>
+
 </body>
 </html>
