@@ -3,7 +3,11 @@
     { "source": "/", "destination": "/callingclaw-landing.html" }
   ],
   "redirects": [
-    { "source": "/:path*", "has": [{ "type": "host", "value": "callingclaw.com" }], "destination": "https://callingclaw.ai/:path*", "permanent": true },
-    { "source": "/:path*", "has": [{ "type": "host", "value": "www.callingclaw.com" }], "destination": "https://callingclaw.ai/:path*", "permanent": true }
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "(?:www\\.)?callingclaw\\.com" }],
+      "destination": "https://callingclaw.ai/:path",
+      "permanent": true
+    }
   ]
 }
