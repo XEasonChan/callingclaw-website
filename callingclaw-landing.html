@@ -735,6 +735,8 @@
       background: var(--bg);
       position: relative;
       z-index: 2;
+      content-visibility: auto;
+      contain-intrinsic-size: auto 800px;
     }
 
     .bandwidth-header {
@@ -990,7 +992,7 @@
       padding-block: clamp(4rem, 10vw, 6rem);
     }
 
-    .how-it-works { position: relative; overflow: hidden; }
+    .how-it-works { position: relative; overflow: hidden; content-visibility: auto; contain-intrinsic-size: auto 1200px; }
     .hiw-grid-base, .hiw-grid-glow { position: absolute; inset: 0; pointer-events: none; }
     .hiw-grid-base canvas, .hiw-grid-glow canvas { display: block; width: 100%; height: 100%; }
     .hiw-grid-base { -webkit-mask-image: radial-gradient(800px circle at center, white, transparent); mask-image: radial-gradient(800px circle at center, white, transparent); }
@@ -2985,7 +2987,7 @@
 
     if (!isTouch) {
       var lenis = new Lenis({
-        duration: 1.2,
+        duration: 0.8,  // shorter = less interpolation lag competing with GSAP scrub
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         orientation: 'vertical',
         gestureOrientation: 'vertical',
@@ -3081,6 +3083,14 @@
               if (gridBaseWrap) gridBaseWrap.style.opacity = Math.max(0, 1 - p);
               if (gridGlowWrap) gridGlowWrap.style.opacity = Math.max(0, 1 - p * 1.5);
               if (ytScrollGuard) ytScrollGuard.classList.toggle('inactive', p >= 0.98);
+              // Hide grid canvases once faded out (saves canvas draw + compositing cost)
+              if (p > 0.7) {
+                if (gridBaseWrap) gridBaseWrap.style.visibility = 'hidden';
+                if (gridGlowWrap) gridGlowWrap.style.visibility = 'hidden';
+              } else {
+                if (gridBaseWrap) gridBaseWrap.style.visibility = '';
+                if (gridGlowWrap) gridGlowWrap.style.visibility = '';
+              }
             },
           }
         });
@@ -3300,22 +3310,24 @@
       }
     }
 
-    // Start presentation when scroll animation completes (demo panel fully visible)
-    // Uses scroll position check instead of IntersectionObserver (which fails on pinned elements)
+    // Start presentation when hero scroll animation nears completion
+    // Uses GSAP onUpdate progress check (no scroll listener, no getComputedStyle)
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      let presentationStarted = false;
-      window.addEventListener('scroll', function checkDemoVisible() {
-        if (presentationStarted) return;
-        const panel = document.querySelector('.hero-demo-panel');
-        if (!panel) return;
-        // Check if panel has opacity > 0.8 (animation nearly complete)
-        const opacity = parseFloat(window.getComputedStyle(panel).opacity);
-        if (opacity > 0.8) {
-          presentationStarted = true;
-          window.removeEventListener('scroll', checkDemoVisible);
-          setTimeout(runPresentation, 300);
-        }
-      }, { passive: true });
+      var presentationStarted = false;
+      var heroSection = document.querySelector('.hero');
+      if (heroSection) {
+        ScrollTrigger.create({
+          trigger: heroSection,
+          start: 'top top',
+          end: '+=50%',
+          onUpdate: function(self) {
+            if (!presentationStarted && self.progress > 0.85) {
+              presentationStarted = true;
+              setTimeout(runPresentation, 300);
+            }
+          }
+        });
+      }
     }
 
     // ── How-It-Works: Apple-style Carousel (CSS animation, no rAF loop) ──
@@ -3523,7 +3535,7 @@
       // ── Create one flickering grid on a canvas ──────
       function createGrid(canvas, opts) {
         const ctx = canvas.getContext('2d');
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = 1; // Cap at 1x — decorative 4px dots don't need retina (saves 4x draw calls)
         const squareSize = opts.squareSize || 4;
         const gridGap = opts.gridGap || 4;
         const flickerChance = opts.flickerChance || 0.1;
