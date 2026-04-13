@@ -2451,66 +2451,51 @@
         <div class="hiw-card active" data-hiw-card="0">
           <span class="hiw-card-step">Onboarding</span>
           <h3>GUI for Setting Up</h3>
-          <p class="hiw-card-desc">Download the desktop app. A guided setup walks you through permissions, then connects your personal email so the agent can schedule and auto-join meetings with you.</p>
+          <p class="hiw-card-desc">Download the desktop app. A guided setup walks you through each permission — screen, mic, accessibility, then connects to your agent.</p>
           <div class="hiw-visual">
             <div class="hiw-onboard-split">
               <!-- Left: permission steps -->
               <div class="hiw-onboard-left">
-                <div class="hiw-ob-tag">Step 5 / 5</div>
-                <div class="hiw-ob-title">Configure Voice Provider</div>
-                <div class="hiw-ob-desc">Set up the fast model for real-time voice and vision. Your API key stays local — CallingClaw calls providers directly from your machine.</div>
-                <div class="hiw-ob-status granted"><span class="hiw-ob-dot green"></span> Screen Recording</div>
-                <div class="hiw-ob-status granted"><span class="hiw-ob-dot green"></span> Microphone &amp; Accessibility</div>
-                <div class="hiw-ob-status granted"><span class="hiw-ob-dot green"></span> Your Personal Email</div>
-                <div class="hiw-ob-status pending"><span class="hiw-ob-dot yellow"></span> Voice &amp; Vision API Key</div>
-                <div class="hiw-ob-email-input">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                  <span style="color:var(--text-tertiary);">sk-xxxxxxxx...</span>
-                </div>
-                <div style="margin-top:0.75rem;display:flex;gap:0.5rem;">
-                  <span class="hiw-ob-btn primary">Save API Key</span>
+                <div class="hiw-ob-tag">Step 1 / 4</div>
+                <div class="hiw-ob-title">Screen Understanding</div>
+                <div class="hiw-ob-desc">CallingClaw needs to see the screen to understand what's being discussed in meetings.</div>
+                <div class="hiw-ob-status granted"><span class="hiw-ob-dot green"></span> Granted</div>
+                <div class="hiw-ob-status granted"><span class="hiw-ob-dot green"></span> Microphone — Granted</div>
+                <div class="hiw-ob-status pending"><span class="hiw-ob-dot yellow"></span> Accessibility — Waiting...</div>
+                <div class="hiw-ob-status"><span class="hiw-ob-dot grey"></span> Connect to OpenClaw</div>
+                <div style="margin-top:1rem;display:flex;gap:0.5rem;">
+                  <span class="hiw-ob-btn primary">Grant Accessibility</span>
                   <span class="hiw-ob-btn ghost">Skip</span>
                 </div>
               </div>
-              <!-- Right: mini architecture diagram with S1 highlighted -->
-              <div class="hiw-onboard-right" style="gap:0.5rem;padding:0.75rem;">
-                <!-- System 1 — highlighted (being configured) -->
-                <div class="hiw-ob-arch-card active">
-                  <div class="hiw-ob-arch-badge s1">System 1 — Fast</div>
-                  <div class="hiw-ob-arch-title">Voice &amp; Vision</div>
-                  <div class="hiw-ob-arch-providers">
-                    <span class="hiw-ob-provider active">OpenAI Realtime</span>
-                    <span class="hiw-ob-provider">Gemini Live</span>
+              <!-- Right: visual -->
+              <div class="hiw-onboard-right">
+                <div class="hiw-ob-screen-frame">
+                  <div class="hiw-ob-titlebar">
+                    <span class="hiw-ob-dot red"></span>
+                    <span class="hiw-ob-dot yellow"></span>
+                    <span class="hiw-ob-dot green"></span>
                   </div>
-                  <div class="hiw-ob-arch-stats">
-                    <span>~300ms</span>
-                    <span>Voice + Vision</span>
-                    <span>Real-time</span>
-                  </div>
-                </div>
-                <!-- Memory bridge mini -->
-                <div class="hiw-ob-arch-bridge">
-                  <div class="hiw-ob-arch-bridge-line"></div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5 7.4V20h6v-2.6c2.9-1.1 5-4 5-7.4a8 8 0 0 0-8-8z"/></svg>
-                  <div class="hiw-ob-arch-bridge-line"></div>
-                </div>
-                <!-- System 2 — dimmed (not being configured now) -->
-                <div class="hiw-ob-arch-card dimmed">
-                  <div class="hiw-ob-arch-badge s2">System 2 — Slow</div>
-                  <div class="hiw-ob-arch-title">Agent (OpenClaw)</div>
-                  <div class="hiw-ob-arch-stats">
-                    <span>2-10s</span>
-                    <span>Text + Code</span>
-                    <span>Deep Reasoning</span>
+                  <div class="hiw-ob-screen-body">
+                    <div class="hiw-ob-scan-line"></div>
+                    <div class="hiw-ob-box b1"></div>
+                    <div class="hiw-ob-box b2"></div>
+                    <div class="hiw-ob-box b3"></div>
+                    <div class="hiw-ob-box b4"></div>
+                    <div class="hiw-ob-box b5"></div>
+                    <div class="hiw-ob-label l1">Slide</div>
+                    <div class="hiw-ob-label l2">Code</div>
+                    <div class="hiw-ob-label l3">Footer</div>
+                    <div class="hiw-ob-label l4">Diagram</div>
+                    <div class="hiw-ob-label l5">Nav</div>
                   </div>
                 </div>
                 <!-- Progress dots -->
                 <div class="hiw-ob-dots">
                   <span class="hiw-ob-pip done"></span>
                   <span class="hiw-ob-pip done"></span>
-                  <span class="hiw-ob-pip done"></span>
-                  <span class="hiw-ob-pip done"></span>
                   <span class="hiw-ob-pip active"></span>
+                  <span class="hiw-ob-pip"></span>
                 </div>
               </div>
             </div>
