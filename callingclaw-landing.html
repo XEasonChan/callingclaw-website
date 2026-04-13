@@ -2995,7 +2995,7 @@
         lenis.raf(time * 1000);
       });
 
-      gsap.ticker.lagSmoothing(0);
+      gsap.ticker.lagSmoothing(500, 33);
     } else {
       // Touch devices: GSAP normalizeScroll handles touch → scroll for pinned sections
       ScrollTrigger.normalizeScroll(true);
@@ -3114,35 +3114,23 @@
     const bandwidthContent = document.querySelector('.bandwidth-content');
     if (bandwidthContent) observer.observe(bandwidthContent);
 
-    // ── Action Cards Scroll Animation ─────────────────────────
+    // ── Action Cards Scroll Animation (GSAP ScrollTrigger) ──
     const actionCards = document.querySelectorAll('.action-card');
     const bandwidthSection = document.querySelector('.bandwidth-image-container');
 
-    if (actionCards.length && bandwidthSection) {
-      const updateActionCardsAnimation = () => {
-        const rect = bandwidthSection.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
+    if (actionCards.length >= 2 && bandwidthSection) {
+      // Use ScrollTrigger instead of manual scroll+getBoundingClientRect (avoids layout thrash)
+      actionCards.forEach(function(card) { card.style.willChange = 'transform, opacity'; });
+      gsap.set(actionCards, { opacity: 0, y: 40 });
 
-        // Calculate scroll progress within the bandwidth section
-        const sectionProgress = Math.max(0, Math.min(1,
-          (windowHeight - rect.top) / (windowHeight + rect.height * 0.5)
-        ));
-
-        // First card (Retrieving) appears at 30-50% progress
-        const card1Progress = Math.max(0, Math.min(1, (sectionProgress - 0.3) / 0.2));
-        actionCards[0].style.opacity = card1Progress;
-        actionCards[0].style.transform = `translateY(${40 * (1 - card1Progress)}px)`;
-
-        // Second card (Updating) appears at 50-70% progress
-        const card2Progress = Math.max(0, Math.min(1, (sectionProgress - 0.5) / 0.2));
-        actionCards[1].style.opacity = card2Progress;
-        actionCards[1].style.transform = `translateY(${40 * (1 - card2Progress)}px)`;
-      };
-
-      window.addEventListener('scroll', () => {
-        requestAnimationFrame(updateActionCardsAnimation);
-      }, { passive: true });
-      updateActionCardsAnimation();
+      gsap.to(actionCards[0], {
+        opacity: 1, y: 0,
+        scrollTrigger: { trigger: bandwidthSection, start: 'top 70%', end: 'center center', scrub: true }
+      });
+      gsap.to(actionCards[1], {
+        opacity: 1, y: 0,
+        scrollTrigger: { trigger: bandwidthSection, start: 'top 50%', end: 'center 30%', scrub: true }
+      });
     }
 
     // Observe scroll reveal elements
@@ -3566,14 +3554,19 @@
           }
         }
 
+        var frameSkip = 0;
         function draw(time) {
-          if (!inView) { animId = requestAnimationFrame(draw); return; }
+          animId = requestAnimationFrame(draw);
+          if (!inView) return;
+          // Throttle to ~15fps (every 4th frame) — 4 canvases at 60fps kills the main thread
+          if (++frameSkip < 4) return;
+          frameSkip = 0;
           const dt = (time - lastTime) / 1000;
           lastTime = time;
 
           // Update flickering
           for (let i = 0; i < squares.length; i++) {
-            if (Math.random() < flickerChance * dt) {
+            if (Math.random() < flickerChance * dt * 4) {
               squares[i] = Math.random() * maxOpacity;
             }
           }
@@ -3592,8 +3585,6 @@
               );
             }
           }
-
-          animId = requestAnimationFrame(draw);
         }
 
         // Visibility optimization
@@ -3639,11 +3630,15 @@
           gridGap: 4,
         });
 
-        // Mouse tracking — radial mask follows cursor
+        // Mouse tracking — radial mask follows cursor (throttled to ~30fps)
+        var lastMaskUpdate = 0;
         document.addEventListener('mousemove', function(e) {
-          const x = (e.clientX / window.innerWidth * 100).toFixed(1);
-          const y = (e.clientY / window.innerHeight * 100).toFixed(1);
-          const mask = 'radial-gradient(400px circle at ' + x + '% ' + y + '%, white, transparent)';
+          var now = performance.now();
+          if (now - lastMaskUpdate < 33) return; // ~30fps cap
+          lastMaskUpdate = now;
+          var x = (e.clientX / window.innerWidth * 100).toFixed(1);
+          var y = (e.clientY / window.innerHeight * 100).toFixed(1);
+          var mask = 'radial-gradient(400px circle at ' + x + '% ' + y + '%, white, transparent)';
           glowWrap.style.webkitMaskImage = mask;
           glowWrap.style.maskImage = mask;
         }, { passive: true });
