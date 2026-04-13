@@ -997,6 +997,9 @@
     .hiw-grid-glow { opacity: 0; transition: opacity 0.3s ease; }
     .hiw-grid-glow.active { opacity: 1; }
 
+    /* Pause all CSS animations when section is off-screen (toggled via JS) */
+    .how-it-works.offscreen * { animation-play-state: paused !important; }
+
     .how-it-works h2, .how-it-works h3, .how-it-works h4 {
       color: #faf9f5;
     }
@@ -1070,6 +1073,7 @@
       overflow: hidden;
     }
 
+    @keyframes hiwFill { from { width: 0%; } to { width: 100%; } }
     .hiw-tab-fill {
       height: 100%;
       width: 0%;
@@ -3314,7 +3318,7 @@
       }, { passive: true });
     }
 
-    // ── How-It-Works: Apple Peek-Through Carousel ─────────────────────
+    // ── How-It-Works: Apple-style Carousel (CSS animation, no rAF loop) ──
     ;(function initHiwCarousel() {
       var tabs = document.querySelectorAll('.hiw-tab');
       var track = document.getElementById('hiwCards');
@@ -3324,130 +3328,113 @@
 
       var current = 0;
       var total = cards.length;
-      var DURATION = 6000;
-      var startTime = null;
-      var rafId = null;
+      var DURATION = 6;
       var paused = false;
 
-      // Calculate the pixel offset to center card[index] in the carousel
       function getOffset(index) {
         var carouselW = carousel.offsetWidth;
         var card = cards[index];
-        // Card left edge relative to track start
-        var cardLeft = card.offsetLeft;
-        var cardW = card.offsetWidth;
-        // Center the card: shift so card center aligns with carousel center
-        return -(cardLeft - (carouselW - cardW) / 2);
+        return -(card.offsetLeft - (carouselW - card.offsetWidth) / 2);
       }
 
       function goTo(index) {
         current = index;
         track.style.transform = 'translateX(' + getOffset(current) + 'px)';
 
-        // Active card highlight
-        cards.forEach(function(c, i) {
-          c.classList.toggle('active', i === current);
-        });
+        cards.forEach(function(c, i) { c.classList.toggle('active', i === current); });
 
-        // Tab states
+        // Tab states: CSS animation drives the fill bar (no JS rAF loop)
         tabs.forEach(function(tab, i) {
           var fill = tab.querySelector('.hiw-tab-fill');
           tab.classList.remove('active', 'visited');
-          fill.style.transition = 'none';
+          fill.style.animation = 'none';
           if (i < current) {
             tab.classList.add('visited');
             fill.style.width = '100%';
           } else if (i === current) {
             tab.classList.add('active');
             fill.style.width = '0%';
+            // CSS animation: 0→100% over DURATION seconds, GPU-composited
+            fill.offsetHeight; // force reflow to restart animation
+            fill.style.animation = 'hiwFill ' + DURATION + 's linear forwards';
+            fill.style.animationPlayState = paused ? 'paused' : 'running';
           } else {
             fill.style.width = '0%';
           }
         });
-
-        startTime = null;
-        if (rafId) cancelAnimationFrame(rafId);
-        rafId = requestAnimationFrame(tick);
       }
 
-      function tick(now) {
-        if (paused) { rafId = null; return; }
-        if (!startTime) startTime = now;
-        var progress = Math.min((now - startTime) / DURATION, 1);
+      // CSS animation end → advance to next card
+      tabs.forEach(function(tab) {
+        var fill = tab.querySelector('.hiw-tab-fill');
+        fill.addEventListener('animationend', function() {
+          if (!paused) goTo((current + 1) % total);
+        });
+      });
 
-        tabs[current].querySelector('.hiw-tab-fill').style.width = (progress * 100) + '%';
-
-        if (progress >= 1) {
-          rafId = null;
-          goTo((current + 1) % total);
-        } else {
-          rafId = requestAnimationFrame(tick);
-        }
-      }
-
-      // Click tab → jump + restart
+      // Click tab → jump
       tabs.forEach(function(tab) {
         tab.addEventListener('click', function() {
           goTo(parseInt(tab.dataset.step));
         });
       });
 
-      // Pause on hover
-      var clipEl = document.querySelector('.hiw-carousel-clip');
-      if (clipEl) {
-        clipEl.addEventListener('mouseenter', function() { paused = true; });
-        clipEl.addEventListener('mouseleave', function() {
-          paused = false;
-          if (!rafId) rafId = requestAnimationFrame(tick);
-        });
+      // Pause/resume: toggle CSS animation-play-state (no JS timer needed)
+      function setPaused(p) {
+        paused = p;
+        var fill = tabs[current] && tabs[current].querySelector('.hiw-tab-fill');
+        if (fill) fill.style.animationPlayState = p ? 'paused' : 'running';
       }
 
-      // Recalculate on resize
+      var clipEl = document.querySelector('.hiw-carousel-clip');
+      if (clipEl) {
+        clipEl.addEventListener('mouseenter', function() { setPaused(true); });
+        clipEl.addEventListener('mouseleave', function() { setPaused(false); });
+      }
+
       window.addEventListener('resize', function() {
         track.style.transition = 'none';
         track.style.transform = 'translateX(' + getOffset(current) + 'px)';
         requestAnimationFrame(function() { track.style.transition = ''; });
       });
 
-      // Start when visible, pause when not
+      // Visibility: pause CSS animation when off-screen
       var section = document.querySelector('.how-it-works');
-      var observer = new IntersectionObserver(function(entries) {
+      new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
-          if (entry.isIntersecting) {
-            paused = false;
-            if (!rafId) {
-              if (!startTime) goTo(0);
-              else rafId = requestAnimationFrame(tick);
-            }
-          } else {
-            paused = true;
-          }
+          if (entry.isIntersecting) { setPaused(false); if (!current) goTo(0); }
+          else { setPaused(true); }
         });
-      }, { threshold: 0.2 });
-      if (section) observer.observe(section);
+      }, { threshold: 0.2 }).observe(section);
 
-      // Set first card active immediately
       cards[0].classList.add('active');
     })();
 
     // ── Step 3 Meeting Frame: Cursor + Caption Animation ────────────
+    // Pauses when card is not active or not visible (no wasted CPU)
     ;(function initMfAnimation() {
       var cursor = document.getElementById('hiwMfCursor');
       var captionText = document.getElementById('hiwMfCaptionText');
-      var screen = cursor && cursor.parentElement;
-      if (!cursor || !captionText || !screen) return;
+      if (!cursor || !captionText) return;
 
-      function moveTo(xPct, yPct, dur) {
+      var active = false;
+      var abortCtrl = null;
+
+      function moveTo(xPct, yPct, dur, signal) {
         cursor.style.transition = 'left ' + dur + 'ms cubic-bezier(0.25,0.1,0.25,1), top ' + dur + 'ms cubic-bezier(0.25,0.1,0.25,1)';
         cursor.style.left = xPct + '%';
         cursor.style.top = yPct + '%';
-        return new Promise(function(r) { setTimeout(r, dur); });
+        return new Promise(function(r, rej) {
+          var t = setTimeout(r, dur);
+          if (signal) signal.addEventListener('abort', function() { clearTimeout(t); rej('aborted'); });
+        });
       }
 
-      function click() {
-        return new Promise(function(r) {
+      function clickAnim(signal) {
+        return new Promise(function(r, rej) {
           cursor.style.transform = 'scale(0.8)';
-          setTimeout(function() { cursor.style.transform = 'scale(1)'; setTimeout(r, 100); }, 150);
+          var t = setTimeout(function() { cursor.style.transform = 'scale(1)'; setTimeout(r, 100); }, 150);
+          if (signal) signal.addEventListener('abort', function() { clearTimeout(t); rej('aborted'); });
         });
       }
 
@@ -3459,56 +3446,65 @@
         }, 150);
       }
 
-      function wait(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
-
-      async function runLoop() {
-        while (true) {
-          // Point at sprint table header
-          say("Here's our current sprint plan.");
-          await moveTo(30, 30, 800);
-          await wait(1500);
-
-          // Point at first row (voice routing — Done)
-          say("Voice routing is done — that was the hard part.");
-          await moveTo(25, 42, 600);
-          await click();
-          await wait(1800);
-
-          // Point at second row (screen share — In Progress)
-          say("Screen share API is in progress now.");
-          await moveTo(35, 52, 500);
-          await click();
-          await wait(1800);
-
-          // Point at third row (calendar — Blocked)
-          say("Calendar integration is blocked on Peter's side.");
-          await moveTo(28, 62, 500);
-          await wait(1800);
-
-          // Point at fourth row (visual diff — Done)
-          say("Visual diff optimization shipped yesterday.");
-          await moveTo(40, 72, 600);
-          await click();
-          await wait(1500);
-
-          // Move to center, ask question
-          say("Any questions about the plan?");
-          await moveTo(50, 45, 800);
-          await wait(2500);
-        }
+      function wait(ms, signal) {
+        return new Promise(function(r, rej) {
+          var t = setTimeout(r, ms);
+          if (signal) signal.addEventListener('abort', function() { clearTimeout(t); rej('aborted'); });
+        });
       }
 
-      // Start when the card becomes visible
+      async function runLoop(signal) {
+        try {
+          while (!signal.aborted) {
+            say("Here's our current sprint plan.");
+            await moveTo(30, 30, 800, signal);
+            await wait(1500, signal);
+            say("Voice routing is done — that was the hard part.");
+            await moveTo(25, 42, 600, signal);
+            await clickAnim(signal);
+            await wait(1800, signal);
+            say("Screen share API is in progress now.");
+            await moveTo(35, 52, 500, signal);
+            await clickAnim(signal);
+            await wait(1800, signal);
+            say("Calendar integration is blocked on Peter's side.");
+            await moveTo(28, 62, 500, signal);
+            await wait(1800, signal);
+            say("Visual diff optimization shipped yesterday.");
+            await moveTo(40, 72, 600, signal);
+            await clickAnim(signal);
+            await wait(1500, signal);
+            say("Any questions about the plan?");
+            await moveTo(50, 45, 800, signal);
+            await wait(2500, signal);
+          }
+        } catch(e) { /* aborted — clean stop */ }
+      }
+
+      // Only run when card 2 is visible and active in the carousel
       var card = document.querySelector('[data-hiw-card="2"]');
       if (!card) return;
-      var started = false;
-      var obs = new IntersectionObserver(function(entries) {
-        if (entries[0].isIntersecting && !started) {
-          started = true;
-          runLoop();
+      new IntersectionObserver(function(entries) {
+        var visible = entries[0].isIntersecting && card.classList.contains('active');
+        if (visible && !active) {
+          active = true;
+          abortCtrl = new AbortController();
+          runLoop(abortCtrl.signal);
+        } else if (!visible && active) {
+          active = false;
+          if (abortCtrl) abortCtrl.abort();
         }
-      }, { threshold: 0.5 });
-      obs.observe(card);
+      }, { threshold: 0.3 }).observe(card);
+    })();
+
+    // ── Pause HiW CSS animations when off-screen ──
+    ;(function() {
+      var hiw = document.querySelector('.how-it-works');
+      if (!hiw) return;
+      hiw.classList.add('offscreen');
+      new IntersectionObserver(function(entries) {
+        hiw.classList.toggle('offscreen', !entries[0].isIntersecting);
+      }, { threshold: 0 }).observe(hiw);
     })();
 
     // ── Flickering Grid Animation (ported from React FlickeringGrid) ────
