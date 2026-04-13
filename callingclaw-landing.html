@@ -507,12 +507,12 @@
 
     .hero-image-container {
       position: relative;
-      width: min(100% - 2rem, 960px);
+      width: 100vw;
       margin-inline: auto;
       overflow: hidden;
       border-radius: 16px;
-      will-change: width, border-radius;
-      transition: width 0s, border-radius 0s;
+      /* Start scaled down, GSAP animates scale→1 (GPU-only, no layout reflow) */
+      will-change: transform, border-radius;
     }
 
     .hero-image {
@@ -3001,7 +3001,7 @@
         lenis.raf(time * 1000);
       });
 
-      gsap.ticker.lagSmoothing(500, 33);
+      gsap.ticker.lagSmoothing(0); // Lenis official: disable GSAP smoothing (Lenis handles it)
     } else {
       // Touch devices: GSAP normalizeScroll handles touch → scroll for pinned sections
       ScrollTrigger.normalizeScroll(true);
@@ -3095,8 +3095,14 @@
           }
         });
 
+        // Calculate initial scale: container starts visually as 960px (or viewport - 2rem)
+        var initialWidth = Math.min(window.innerWidth - 32, 960);
+        var fullWidth = window.innerWidth;
+        var startScale = initialWidth / fullWidth;
+        gsap.set(heroImageContainer, { scale: startScale, borderRadius: '16px' });
+
         heroTl.to(heroImageContainer, {
-          width: '100vw',
+          scale: 1,               // transform: scale() — GPU-only, no layout reflow
           borderRadius: '0px',
           duration: 1,
           ease: 'power1.inOut'
