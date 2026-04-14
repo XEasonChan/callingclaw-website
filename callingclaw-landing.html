@@ -569,7 +569,7 @@
 
     /* ── Mobile: YouTube play button on hero image ── */
     .hero-yt-play {
-      display: none; /* shown via JS on mobile */
+      display: none; /* shown on mobile via media query below + JS fallback */
       position: absolute;
       top: 50%;
       left: 50%;
@@ -2079,6 +2079,14 @@
         display: none;
       }
 
+      /* Show YouTube play button on mobile (CSS, no JS dependency) */
+      .hero-yt-play {
+        display: block;
+      }
+      .hero-demo-panel {
+        display: none !important;
+      }
+
       .bandwidth-content {
         grid-template-columns: 1fr;
         gap: 2rem;
@@ -3003,10 +3011,9 @@
       });
 
       gsap.ticker.lagSmoothing(0); // Lenis official: disable GSAP smoothing (Lenis handles it)
-    } else {
-      // Touch devices: GSAP normalizeScroll handles touch → scroll for pinned sections
-      ScrollTrigger.normalizeScroll(true);
     }
+    // Touch devices: use native scroll (no normalizeScroll — it hijacks scroll events
+    // and breaks IntersectionObserver, causing bandwidth section to stay invisible)
 
     // ── Hero GSAP ScrollTrigger Animation ─────────────────────────────────
     const heroImageContainer = document.getElementById('heroImageContainer');
