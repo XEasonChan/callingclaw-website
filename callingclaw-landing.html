@@ -738,8 +738,6 @@
       background: var(--bg);
       position: relative;
       z-index: 2;
-      content-visibility: auto;
-      contain-intrinsic-size: auto 800px;
     }
 
     .bandwidth-header {
@@ -3017,41 +3015,40 @@
     const heroPinSpacer = document.getElementById('heroPinSpacer');
     const heroWrapper = document.querySelector('.hero-image-wrapper');
 
+    // ── MOBILE: YouTube play button on hero image (independent of GSAP init) ──
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      if (heroDemoPanel) heroDemoPanel.style.display = 'none';
+      var playBtn = document.getElementById('heroYtPlay');
+      if (playBtn) playBtn.style.display = 'block';
+
+      var ytModal = document.getElementById('ytModal');
+      var ytModalBody = document.getElementById('ytModalBody');
+      var ytModalClose = document.getElementById('ytModalClose');
+      if (playBtn && ytModal && ytModalBody) {
+        playBtn.addEventListener('click', function() {
+          ytModalBody.innerHTML = '<iframe src="https://www.youtube.com/embed/VIDEO_ID?rel=0&autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="CallingClaw Demo"></iframe>';
+          ytModal.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        });
+        ytModalClose.addEventListener('click', function() {
+          ytModal.classList.remove('open');
+          ytModalBody.innerHTML = '';
+          document.body.style.overflow = '';
+        });
+        ytModal.addEventListener('click', function(e) {
+          if (e.target === ytModal) ytModalClose.click();
+        });
+      }
+    }
+
     if (heroImageContainer && heroDemoPanel && heroPinSpacer && heroImage && heroWrapper) {
       gsap.registerPlugin(ScrollTrigger);
 
       const gridBaseWrap = document.getElementById('flickeringGridBaseWrap');
       const gridGlowWrap = document.getElementById('flickeringGridGlowWrap');
-      const isMobile = window.innerWidth < 768;
 
       if (isMobile) {
-        // ── MOBILE: hide demo panel, show play button on hero image ──
-        heroDemoPanel.style.display = 'none';
-        var playBtn = document.getElementById('heroYtPlay');
-        if (playBtn) playBtn.style.display = 'block';
-
-        // Play button opens YouTube modal
-        var ytModal = document.getElementById('ytModal');
-        var ytModalBody = document.getElementById('ytModalBody');
-        var ytModalClose = document.getElementById('ytModalClose');
-        if (playBtn && ytModal && ytModalBody) {
-          playBtn.addEventListener('click', function() {
-            ytModalBody.innerHTML = '<iframe src="https://www.youtube.com/embed/VIDEO_ID?rel=0&autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="CallingClaw Demo"></iframe>';
-            ytModal.classList.add('open');
-            document.body.style.overflow = 'hidden';
-          });
-          ytModalClose.addEventListener('click', function() {
-            ytModal.classList.remove('open');
-            ytModalBody.innerHTML = '';
-            document.body.style.overflow = '';
-          });
-          ytModal.addEventListener('click', function(e) {
-            if (e.target === ytModal) {
-              ytModalClose.click();
-            }
-          });
-        }
-
         // Fade grid on scroll
         ScrollTrigger.create({
           trigger: heroWrapper,
