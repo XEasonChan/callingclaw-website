@@ -507,12 +507,11 @@
 
     .hero-image-container {
       position: relative;
-      width: 100vw;
+      width: min(100% - 2rem, 960px);
       margin-inline: auto;
       overflow: hidden;
       border-radius: 16px;
-      /* Start scaled down, GSAP animates scale→1 (GPU-only, no layout reflow) */
-      will-change: transform, border-radius;
+      will-change: width, border-radius;
     }
 
     .hero-image {
@@ -3095,14 +3094,8 @@
           }
         });
 
-        // Calculate initial scale: container starts visually as 960px (or viewport - 2rem)
-        var initialWidth = Math.min(window.innerWidth - 32, 960);
-        var fullWidth = window.innerWidth;
-        var startScale = initialWidth / fullWidth;
-        gsap.set(heroImageContainer, { scale: startScale, borderRadius: '16px' });
-
         heroTl.to(heroImageContainer, {
-          scale: 1,               // transform: scale() — GPU-only, no layout reflow
+          width: '100vw',
           borderRadius: '0px',
           duration: 1,
           ease: 'power1.inOut'
