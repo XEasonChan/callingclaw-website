@@ -3055,6 +3055,16 @@
       const gridBaseWrap = document.getElementById('flickeringGridBaseWrap');
       const gridGlowWrap = document.getElementById('flickeringGridGlowWrap');
 
+      // The hero grid canvases are position:fixed, so their IntersectionObserver never
+      // fires and visibility:hidden doesn't stop a rAF — pause them explicitly.
+      function setHeroGridsPaused(paused) {
+        var grids = window.__ccHeroGrids;
+        if (!grids) return;
+        for (var i = 0; i < grids.length; i++) {
+          if (paused) grids[i].pause(); else grids[i].resume();
+        }
+      }
+
       if (isMobile) {
         // Fade grid on scroll
         ScrollTrigger.create({
@@ -3065,6 +3075,7 @@
             var p = self.progress;
             if (gridBaseWrap) gridBaseWrap.style.opacity = Math.max(0, 1 - p * 2);
             if (gridGlowWrap) gridGlowWrap.style.opacity = Math.max(0, 1 - p * 3);
+            setHeroGridsPaused(p >= 0.5); // fully transparent from here on
           }
         });
       } else {
@@ -3094,9 +3105,11 @@
               if (p > 0.7) {
                 if (gridBaseWrap) gridBaseWrap.style.visibility = 'hidden';
                 if (gridGlowWrap) gridGlowWrap.style.visibility = 'hidden';
+                setHeroGridsPaused(true);
               } else {
                 if (gridBaseWrap) gridBaseWrap.style.visibility = '';
                 if (gridGlowWrap) gridGlowWrap.style.visibility = '';
+                setHeroGridsPaused(false);
               }
             },
           }
@@ -3539,20 +3552,48 @@
         return `rgba(${r}, ${g}, ${b},`;
       }
 
+      // ── Global scroll gate ───────────────────────────
+      // Freezing the ambient flicker while the page is moving is imperceptible,
+      // and it keeps ~40k canvas ops off every scroll frame.
+      var scrolling = false;
+      var scrollIdle = null;
+      function markScrolling() {
+        scrolling = true;
+        clearTimeout(scrollIdle);
+        scrollIdle = setTimeout(function () { scrolling = false; }, 150);
+      }
+      if (typeof lenis !== 'undefined' && lenis && typeof lenis.on === 'function') {
+        lenis.on('scroll', markScrolling);
+      } else {
+        window.addEventListener('scroll', markScrolling, { passive: true });
+      }
+
       // ── Create one flickering grid on a canvas ──────
       function createGrid(canvas, opts) {
         const ctx = canvas.getContext('2d');
         const dpr = 1; // Cap at 1x — decorative 4px dots don't need retina (saves 4x draw calls)
         const squareSize = opts.squareSize || 4;
         const gridGap = opts.gridGap || 4;
+        const pitch = squareSize + gridGap;
         const flickerChance = opts.flickerChance || 0.1;
         const maxOpacity = opts.maxOpacity || 0.3;
         const colorPrefix = toRGBA(opts.color || '#000');
 
-        let cols, rows, squares, w, h;
+        // Opacity is quantised into a fixed set of levels so the colour strings can be
+        // built once and reused — one fillStyle assignment per level instead of one per cell.
+        const LEVELS = 32;
+        const levelColor = new Array(LEVELS);
+        for (let b = 0; b < LEVELS; b++) {
+          levelColor[b] = colorPrefix + ((b + 0.5) / LEVELS * maxOpacity).toFixed(4) + ')';
+        }
+
+        let cols, rows, squares, dirty, w, h;
         let lastTime = 0;
         let animId = null;
         let inView = true;
+        let paused = false;
+        let fullRedraw = true;
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         function resize() {
           w = canvas.parentElement.clientWidth;
@@ -3561,45 +3602,63 @@
           canvas.height = h * dpr;
           canvas.style.width = w + 'px';
           canvas.style.height = h + 'px';
-          cols = Math.floor(w / (squareSize + gridGap));
-          rows = Math.floor(h / (squareSize + gridGap));
-          squares = new Float32Array(cols * rows);
+          cols = Math.floor(w / pitch);
+          rows = Math.floor(h / pitch);
+          squares = new Uint8Array(cols * rows);
+          dirty = new Int32Array(cols * rows);
           for (let i = 0; i < squares.length; i++) {
-            squares[i] = Math.random() * maxOpacity;
+            squares[i] = (Math.random() * LEVELS) | 0;
+          }
+          fullRedraw = true;
+        }
+
+        // Repaints only the cells listed in `dirty[0..n)`, batched one fillStyle per level.
+        function paint(n) {
+          for (let d = 0; d < n; d++) {
+            const idx = dirty[d];
+            ctx.clearRect(((idx / rows) | 0) * pitch * dpr, (idx % rows) * pitch * dpr, squareSize * dpr, squareSize * dpr);
+          }
+          for (let b = 0; b < LEVELS; b++) {
+            let opened = false;
+            for (let d = 0; d < n; d++) {
+              const idx = dirty[d];
+              if (squares[idx] !== b) continue;
+              if (!opened) { ctx.fillStyle = levelColor[b]; opened = true; }
+              ctx.fillRect(((idx / rows) | 0) * pitch * dpr, (idx % rows) * pitch * dpr, squareSize * dpr, squareSize * dpr);
+            }
           }
         }
 
-        var frameSkip = 0;
+        // frameSkip is seeded per grid so the four grids never redraw on the same frame
+        var frameSkip = opts.phase || 0;
         function draw(time) {
           animId = requestAnimationFrame(draw);
-          if (!inView) return;
+          // Not visible / mid-scroll: nothing to do, and don't let dt pile up
+          if (!inView || scrolling) { lastTime = time; return; }
           // Throttle to ~15fps (every 4th frame) — 4 canvases at 60fps kills the main thread
           if (++frameSkip < 4) return;
           frameSkip = 0;
-          const dt = (time - lastTime) / 1000;
+          const dt = Math.min((time - lastTime) / 1000, 0.1);
           lastTime = time;
 
-          // Update flickering
-          for (let i = 0; i < squares.length; i++) {
-            if (Math.random() < flickerChance * dt * 4) {
-              squares[i] = Math.random() * maxOpacity;
-            }
+          if (fullRedraw) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < squares.length; i++) dirty[i] = i;
+            paint(squares.length);
+            fullRedraw = false;
+            return;
           }
 
-          // Draw
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-              const opacity = squares[i * rows + j];
-              ctx.fillStyle = colorPrefix + opacity + ')';
-              ctx.fillRect(
-                i * (squareSize + gridGap) * dpr,
-                j * (squareSize + gridGap) * dpr,
-                squareSize * dpr,
-                squareSize * dpr
-              );
+          // Only the ~3% of cells that flip this tick get touched (was: all of them)
+          const chance = flickerChance * dt * 4;
+          let n = 0;
+          for (let i = 0; i < squares.length; i++) {
+            if (Math.random() < chance) {
+              squares[i] = (Math.random() * LEVELS) | 0;
+              dirty[n++] = i;
             }
           }
+          if (n) paint(n);
         }
 
         // Visibility optimization
@@ -3611,39 +3670,55 @@
         ro.observe(canvas.parentElement);
 
         resize();
-        animId = requestAnimationFrame(draw);
+        if (!reduced) animId = requestAnimationFrame(draw);
 
-        // Respect reduced motion
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          cancelAnimationFrame(animId);
-        }
-
-        return { resize, destroy() { cancelAnimationFrame(animId); io.disconnect(); ro.disconnect(); } };
+        return {
+          resize,
+          // Geometric IntersectionObserver can't see the fixed hero canvases going away —
+          // the hero ScrollTrigger drives these explicitly instead.
+          pause() {
+            if (paused || reduced) return;
+            paused = true;
+            if (animId !== null) { cancelAnimationFrame(animId); animId = null; }
+          },
+          resume() {
+            if (!paused || reduced) return;
+            paused = false;
+            lastTime = 0;
+            if (animId === null) animId = requestAnimationFrame(draw);
+          },
+          destroy() { if (animId !== null) cancelAnimationFrame(animId); io.disconnect(); ro.disconnect(); },
+        };
       }
+
+      // Handles for the two fixed hero canvases — driven by the hero ScrollTrigger
+      const heroGrids = [];
 
       // ── Base grid: subtle pink/coral flickering ─────
       const baseCanvas = document.getElementById('flickeringGridBase');
       if (baseCanvas) {
-        createGrid(baseCanvas, {
+        heroGrids.push(createGrid(baseCanvas, {
           color: '#FFD6D1',
           maxOpacity: 0.45,
           flickerChance: 0.1,
           squareSize: 4,
           gridGap: 4,
-        });
+          phase: 0,
+        }));
       }
 
       // ── Glow grid: brighter, follows mouse ─────────
       const glowCanvas = document.getElementById('flickeringGridGlow');
       const glowWrap = document.getElementById('flickeringGridGlowWrap');
       if (glowCanvas && glowWrap) {
-        createGrid(glowCanvas, {
+        heroGrids.push(createGrid(glowCanvas, {
           color: '#DC4A3A',
           maxOpacity: 0.5,
           flickerChance: 0.3,
           squareSize: 4,
           gridGap: 4,
-        });
+          phase: 1,
+        }));
 
         // Mouse tracking — radial mask follows cursor (throttled to ~30fps)
         var lastMaskUpdate = 0;
@@ -3671,15 +3746,23 @@
         }, { passive: true, once: true });
       }
 
+      // Expose the hero pair; the hero ScrollTrigger pauses them once they fade out
+      // (their wraps are position:fixed, so the IntersectionObserver never reports them off-screen).
+      window.__ccHeroGrids = heroGrids;
+      var baseWrapEl = document.getElementById('flickeringGridBaseWrap');
+      if (baseWrapEl && baseWrapEl.style.visibility === 'hidden') {
+        for (var hg = 0; hg < heroGrids.length; hg++) heroGrids[hg].pause();
+      }
+
       // ── HiW section grid (dark bg, cream-colored) ──
       var hiwBase = document.getElementById('hiwGridBase');
       var hiwGlowCanvas = document.getElementById('hiwGridGlow');
       var hiwGlowWrap = document.getElementById('hiwGridGlowWrap');
       if (hiwBase) {
-        createGrid(hiwBase, { color: '#1a3d35', maxOpacity: 0.4, flickerChance: 0.08, squareSize: 4, gridGap: 5 });
+        createGrid(hiwBase, { color: '#1a3d35', maxOpacity: 0.4, flickerChance: 0.08, squareSize: 4, gridGap: 5, phase: 2 });
       }
       if (hiwGlowCanvas && hiwGlowWrap) {
-        createGrid(hiwGlowCanvas, { color: '#faf9f5', maxOpacity: 0.25, flickerChance: 0.25, squareSize: 4, gridGap: 5 });
+        createGrid(hiwGlowCanvas, { color: '#faf9f5', maxOpacity: 0.25, flickerChance: 0.25, squareSize: 4, gridGap: 5, phase: 3 });
         document.addEventListener('mousemove', function(e) {
           var sect = document.querySelector('.how-it-works');
           if (!sect) return;
