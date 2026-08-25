@@ -2320,9 +2320,8 @@
         <!-- Demo Panel — YouTube embed (slides up on scroll, desktop only) -->
         <div class="hero-demo-panel">
           <div class="yt-wrap">
-            <!-- REPLACE VIDEO_ID with your actual YouTube video ID -->
             <iframe
-              src="https://www.youtube.com/embed/VIDEO_ID?rel=0&modestbranding=1&color=white"
+              src="https://www.youtube.com/embed/Lgu2CNAdnHI?rel=0&modestbranding=1&color=white"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen
               loading="lazy"
@@ -3041,23 +3040,34 @@
       var playBtn = document.getElementById('heroYtPlay');
       if (playBtn) playBtn.style.display = 'block';
 
-      var ytModal = document.getElementById('ytModal');
-      var ytModalBody = document.getElementById('ytModalBody');
-      var ytModalClose = document.getElementById('ytModalClose');
-      if (playBtn && ytModal && ytModalBody) {
+      // The #ytModal markup lives ~850 lines further down the document, so at the time
+      // this inline script runs it has not been parsed yet and getElementById returns
+      // null — which silently skipped the whole wiring below and left the mobile play
+      // button inert. Wire it once the document has finished parsing instead.
+      var wireYtModal = function() {
+        var ytModal = document.getElementById('ytModal');
+        var ytModalBody = document.getElementById('ytModalBody');
+        var ytModalClose = document.getElementById('ytModalClose');
+        if (!playBtn || !ytModal || !ytModalBody) return;
         playBtn.addEventListener('click', function() {
-          ytModalBody.innerHTML = '<iframe src="https://www.youtube.com/embed/VIDEO_ID?rel=0&autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="CallingClaw Demo"></iframe>';
+          ytModalBody.innerHTML = '<iframe src="https://www.youtube.com/embed/Lgu2CNAdnHI?rel=0&autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="CallingClaw Demo"></iframe>';
           ytModal.classList.add('open');
           document.body.style.overflow = 'hidden';
         });
-        ytModalClose.addEventListener('click', function() {
+        var closeModal = function() {
           ytModal.classList.remove('open');
           ytModalBody.innerHTML = '';
           document.body.style.overflow = '';
-        });
+        };
+        if (ytModalClose) ytModalClose.addEventListener('click', closeModal);
         ytModal.addEventListener('click', function(e) {
-          if (e.target === ytModal) ytModalClose.click();
+          if (e.target === ytModal) closeModal();
         });
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', wireYtModal);
+      } else {
+        wireYtModal();
       }
     }
 
