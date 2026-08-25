@@ -3823,8 +3823,12 @@
       // Expose the hero pair; the hero ScrollTrigger pauses them once they fade out
       // (their wraps are position:fixed, so the IntersectionObserver never reports them off-screen).
       window.__ccHeroGrids = heroGrids;
+      // If that ScrollTrigger already ran before these existed (page loaded scrolled
+      // past the hero), catch up here. Desktop hides the wrap; mobile only fades it to
+      // opacity 0 — a computed number, so read it with parseFloat, not === '0'. Gate on
+      // the base wrap alone: the glow wrap fades out earlier than the pause threshold.
       var baseWrapEl = document.getElementById('flickeringGridBaseWrap');
-      if (baseWrapEl && baseWrapEl.style.visibility === 'hidden') {
+      if (baseWrapEl && (baseWrapEl.style.visibility === 'hidden' || parseFloat(baseWrapEl.style.opacity) === 0)) {
         for (var hg = 0; hg < heroGrids.length; hg++) heroGrids[hg].pause();
       }
 
