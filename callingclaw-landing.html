@@ -1256,8 +1256,11 @@
     .hiw-ob-dot.yellow { background: #ffbd2e; }
     .hiw-ob-dot.green { background: #27c93f; }
     .hiw-ob-screen-body { position: relative; flex: 1; }
-    .hiw-ob-scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); box-shadow: 0 0 8px var(--accent); z-index: 2; animation: obScan 2.5s ease-in-out infinite; }
-    @keyframes obScan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+    /* Full-height travelling wrapper so the scan rides on transform (compositor)
+       instead of `top` (layout + paint per frame); ::before is the visible 2px line. */
+    .hiw-ob-scan-line { position: absolute; inset: 0; pointer-events: none; z-index: 2; animation: obScan 2.5s ease-in-out infinite; }
+    .hiw-ob-scan-line::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); box-shadow: 0 0 8px var(--accent); }
+    @keyframes obScan { 0% { transform: translateY(0); } 50% { transform: translateY(100%); } 100% { transform: translateY(0); } }
     /* Red bounding boxes — match desktop onboarding UI */
     .hiw-ob-box { position: absolute; border: 2px solid var(--accent); border-radius: 6px; opacity: 0; pointer-events: none; animation: obBoxPulse 2.5s ease-in-out infinite; }
     .hiw-ob-box.b1 { top: 4%; left: 3%; width: 45%; height: 30%; animation-delay: 0.3s; }
@@ -2064,6 +2067,10 @@
       from { stroke-dashoffset: 0; }
       to { stroke-dashoffset: -1000; }
     }
+
+    /* stroke-dashoffset is a main-thread SVG repaint of a viewport-wide path —
+       don't run it for the ~8,000px of page where the CTA isn't on screen. */
+    .cta-section.offscreen .telephone-line-path { animation-play-state: paused; }
 
     /* ── Footer ───────────────────────────────────────── */
     footer {
@@ -3596,6 +3603,16 @@
       }, { threshold: 0 }).observe(hiw);
     })();
 
+    // ── Pause the CTA telephone-line dash animation when off-screen ──
+    ;(function() {
+      var cta = document.querySelector('.cta-section');
+      if (!cta) return;
+      cta.classList.add('offscreen');
+      new IntersectionObserver(function(entries) {
+        cta.classList.toggle('offscreen', !entries[0].isIntersecting);
+      }, { threshold: 0 }).observe(cta);
+    })();
+
     // ── Flickering Grid Animation (ported from React FlickeringGrid) ────
     ;(function initFlickeringGrid() {
       // ── Color parser: any CSS color → "rgba(r, g, b," prefix ──
@@ -3820,18 +3837,44 @@
       }
       if (hiwGlowCanvas && hiwGlowWrap) {
         createGrid(hiwGlowCanvas, { color: '#faf9f5', maxOpacity: 0.25, flickerChance: 0.25, squareSize: 4, gridGap: 5, phase: 3 });
-        document.addEventListener('mousemove', function(e) {
-          var sect = document.querySelector('.how-it-works');
-          if (!sect) return;
-          var r = sect.getBoundingClientRect();
-          if (e.clientY < r.top || e.clientY > r.bottom) { hiwGlowWrap.classList.remove('active'); return; }
-          hiwGlowWrap.classList.add('active');
-          var x = ((e.clientX - r.left) / r.width * 100).toFixed(1);
-          var y = ((e.clientY - r.top) / r.height * 100).toFixed(1);
-          var mask = 'radial-gradient(350px circle at ' + x + '% ' + y + '%, white, transparent)';
-          hiwGlowWrap.style.webkitMaskImage = mask;
-          hiwGlowWrap.style.maskImage = mask;
-        }, { passive: true });
+
+        // The old handler ran getBoundingClientRect on every single mousemove, which
+        // forced a synchronous reflow whenever a scrub had just dirtied layout. Now the
+        // section box is measured only on refresh/resize (document coordinates, so
+        // scrolling doesn't invalidate it) and the mask update is coalesced to one per frame.
+        var hiwSect = document.querySelector('.how-it-works');
+        if (hiwSect) {
+          var hiwBox = null, hiwQueued = false, hiwMx = 0, hiwMy = 0;
+          var measureHiw = function() {
+            var r = hiwSect.getBoundingClientRect();
+            hiwBox = { top: r.top + window.scrollY, left: r.left + window.scrollX, w: r.width, h: r.height };
+          };
+          measureHiw();
+          window.addEventListener('resize', measureHiw);
+          window.addEventListener('load', measureHiw);
+          if (window.ScrollTrigger) ScrollTrigger.addEventListener('refresh', measureHiw);
+          // content-visibility:auto means the real height only exists once it's near the viewport
+          new IntersectionObserver(measureHiw, { threshold: 0 }).observe(hiwSect);
+
+          var applyHiwMask = function() {
+            hiwQueued = false;
+            if (!hiwBox || !hiwBox.h) return;
+            var top = hiwBox.top - window.scrollY; // scrollY is a cheap read, no layout
+            if (hiwMy < top || hiwMy > top + hiwBox.h) { hiwGlowWrap.classList.remove('active'); return; }
+            hiwGlowWrap.classList.add('active');
+            var x = ((hiwMx - hiwBox.left) / hiwBox.w * 100).toFixed(1);
+            var y = ((hiwMy - top) / hiwBox.h * 100).toFixed(1);
+            var mask = 'radial-gradient(350px circle at ' + x + '% ' + y + '%, white, transparent)';
+            hiwGlowWrap.style.webkitMaskImage = mask;
+            hiwGlowWrap.style.maskImage = mask;
+          };
+
+          document.addEventListener('mousemove', function(e) {
+            hiwMx = e.clientX;
+            hiwMy = e.clientY;
+            if (!hiwQueued) { hiwQueued = true; requestAnimationFrame(applyHiwMask); }
+          }, { passive: true });
+        }
       }
     })();
   </script>
