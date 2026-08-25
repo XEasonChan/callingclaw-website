@@ -191,9 +191,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(20, 20, 19, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      /* No backdrop-filter here: at 0.97 alpha the blur is invisible, but it forced
+         the sticky nav to re-filter its backdrop on every frame the flickering grid
+         repainted underneath it, and on every frame of every scroll. */
+      background: rgba(20, 20, 19, 0.97);
       border-radius: 16px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
@@ -204,7 +205,7 @@
     }
 
     [data-theme="dark"] nav .container {
-      background: rgba(245, 244, 237, 0.92);
+      background: rgba(245, 244, 237, 0.97);
       border-color: rgba(20, 20, 19, 0.06);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
@@ -957,8 +958,9 @@
     }
 
     .action-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(8px);
+      /* No backdrop-filter: invisible behind a 0.97-alpha white fill, but it
+         re-blurred every frame while the cards were scrub-animated. */
+      background: rgba(255, 255, 255, 0.97);
       border-radius: 12px;
       padding: 0.75rem 1rem;
       display: flex;
