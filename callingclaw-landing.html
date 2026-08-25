@@ -191,9 +191,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(20, 20, 19, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      /* No backdrop-filter here: at 0.97 alpha the blur is invisible, but it forced
+         the sticky nav to re-filter its backdrop on every frame the flickering grid
+         repainted underneath it, and on every frame of every scroll. */
+      background: rgba(20, 20, 19, 0.97);
       border-radius: 16px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
@@ -204,7 +205,7 @@
     }
 
     [data-theme="dark"] nav .container {
-      background: rgba(245, 244, 237, 0.92);
+      background: rgba(245, 244, 237, 0.97);
       border-color: rgba(20, 20, 19, 0.06);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
@@ -515,7 +516,9 @@
       margin-inline: auto;
       overflow: hidden;
       border-radius: 16px;
-      will-change: width, border-radius;
+      /* No will-change here: the desktop scrub drives clip-path/transform and sets
+         will-change only while it is active (neither width nor border-radius could
+         ever be composited, so the old hint did nothing). */
     }
 
     .hero-image {
@@ -524,6 +527,7 @@
       display: block;
       object-fit: cover;
       border-radius: inherit;
+      transform-origin: 50% 50%;
     }
 
     /* Demo Panel Overlay — YouTube embed container */
@@ -954,8 +958,9 @@
     }
 
     .action-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(8px);
+      /* No backdrop-filter: invisible behind a 0.97-alpha white fill, but it
+         re-blurred every frame while the cards were scrub-animated. */
+      background: rgba(255, 255, 255, 0.97);
       border-radius: 12px;
       padding: 0.75rem 1rem;
       display: flex;
@@ -1251,8 +1256,11 @@
     .hiw-ob-dot.yellow { background: #ffbd2e; }
     .hiw-ob-dot.green { background: #27c93f; }
     .hiw-ob-screen-body { position: relative; flex: 1; }
-    .hiw-ob-scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); box-shadow: 0 0 8px var(--accent); z-index: 2; animation: obScan 2.5s ease-in-out infinite; }
-    @keyframes obScan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+    /* Full-height travelling wrapper so the scan rides on transform (compositor)
+       instead of `top` (layout + paint per frame); ::before is the visible 2px line. */
+    .hiw-ob-scan-line { position: absolute; inset: 0; pointer-events: none; z-index: 2; animation: obScan 2.5s ease-in-out infinite; }
+    .hiw-ob-scan-line::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); box-shadow: 0 0 8px var(--accent); }
+    @keyframes obScan { 0% { transform: translateY(0); } 50% { transform: translateY(100%); } 100% { transform: translateY(0); } }
     /* Red bounding boxes — match desktop onboarding UI */
     .hiw-ob-box { position: absolute; border: 2px solid var(--accent); border-radius: 6px; opacity: 0; pointer-events: none; animation: obBoxPulse 2.5s ease-in-out infinite; }
     .hiw-ob-box.b1 { top: 4%; left: 3%; width: 45%; height: 30%; animation-delay: 0.3s; }
@@ -2060,6 +2068,10 @@
       to { stroke-dashoffset: -1000; }
     }
 
+    /* stroke-dashoffset is a main-thread SVG repaint of a viewport-wide path —
+       don't run it for the ~8,000px of page where the CTA isn't on screen. */
+    .cta-section.offscreen .telephone-line-path { animation-play-state: paused; }
+
     /* ── Footer ───────────────────────────────────────── */
     footer {
       padding: 2rem 0;
@@ -2248,7 +2260,7 @@
     <div class="container">
       <a href="/" class="logo">
         <div class="logo-mark">
-          <img src="../Assests/callingclaw-logo.png" alt="CallingClaw">
+          <img src="../Assests/callingclaw-logo.png" alt="CallingClaw" width="512" height="512" decoding="async">
         </div>
         CallingClaw
       </a>
@@ -2301,7 +2313,7 @@
     <div class="hero-image-wrapper">
       <div class="hero-pin-spacer" id="heroPinSpacer">
         <div class="hero-image-container" id="heroImageContainer">
-          <img src="../Assests/HeroPage_Background.png" alt="AI agent in meeting room" class="hero-image" id="heroImage">
+          <img src="../Assests/HeroPage_Background.webp" alt="AI agent in meeting room" class="hero-image" id="heroImage" width="1232" height="928" fetchpriority="high" decoding="async">
           <!-- Mobile: YouTube play button overlay (shown via JS) -->
           <button class="hero-yt-play" id="heroYtPlay" aria-label="Play demo video"></button>
 
@@ -2331,11 +2343,11 @@
       <h2><span class="underline">Meeting Harness</span> for Your Full-time Agents</h2>
       <div class="badge-row">
         <span class="badge accent">
-          <img src="../Assests/logo-openclaw.png" class="claw-icon" alt="">
+          <img src="../Assests/logo-openclaw.png" class="claw-icon" alt="" width="180" height="180" loading="lazy" decoding="async">
           OpenClaw
         </span>
         <span class="badge">
-          <img src="../Assests/logo-claude-code.png" class="claw-icon" alt="">
+          <img src="../Assests/logo-claude-code.png" class="claw-icon" alt="" width="128" height="128" loading="lazy" decoding="async">
           Claude Code
         </span>
       </div>
@@ -2386,7 +2398,7 @@
         </div>
 
         <div class="bandwidth-image-container">
-          <img src="../Assests/Bandwidth_Benefit.png" alt="AI agent pointing at screen" class="bandwidth-image">
+          <img src="../Assests/Bandwidth_Benefit.webp" alt="AI agent pointing at screen" class="bandwidth-image" width="1024" height="1024" loading="lazy" decoding="async">
 
           <!-- Voice Wave Indicator -->
           <div class="voice-wave-indicator">
@@ -2528,7 +2540,7 @@
               <div class="hiw-tg-chat">
                 <div class="hiw-tg-header">
                   <div class="hiw-tg-avatar">
-                    <img src="../Assests/callingclaw-logo.png" width="28" height="28" style="object-fit:contain;" alt="">
+                    <img src="../Assests/callingclaw-logo.png" width="28" height="28" style="object-fit:contain;" alt="" loading="lazy" decoding="async">
                   </div>
                   <div>
                     <div style="font-weight:600;font-size:0.8125rem;color:var(--text);">CallingClaw</div>
@@ -2564,7 +2576,7 @@
                         <div style="font-size:0.5625rem;line-height:1.4;color:var(--text-secondary);margin-top:0.1rem;">Real-time meetings by Google. Share video, desktop, and presentations.</div>
                       </div>
                       <div class="hiw-tg-link-icon">
-                        <img src="https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v1/web-96dp/logo_meet_2020q4_color_2x_web_96dp.png" width="28" height="28" alt="Google Meet" style="object-fit:contain;">
+                        <img src="https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v1/web-96dp/logo_meet_2020q4_color_2x_web_96dp.png" width="28" height="28" alt="Google Meet" style="object-fit:contain;" loading="lazy" decoding="async">
                       </div>
                     </div>
                     <div class="hiw-tg-check">&#10003;&#10003;</div>
@@ -2633,20 +2645,20 @@
                   <span>📋</span> <strong>Sprint Backlog</strong>
                   <div class="hiw-mf-avatars">
                     <span class="hiw-mf-avatar">P</span>
-                    <span class="hiw-mf-avatar active"><img src="../Assests/callingclaw-logo.png" width="16" height="16" style="object-fit:contain" alt=""></span>
+                    <span class="hiw-mf-avatar active"><img src="../Assests/callingclaw-logo.png" width="16" height="16" style="object-fit:contain" alt="" loading="lazy" decoding="async"></span>
                   </div>
                 </div>
                 <table class="hiw-mf-table">
                   <thead><tr><th>Task</th><th>Status</th><th>Priority</th><th>Assignee</th></tr></thead>
                   <tbody>
-                    <tr><td>Implement voice routing</td><td><span class="hiw-tag green">Done</span></td><td>P0</td><td><img src="../Assests/callingclaw-logo.png" width="12" height="12" style="object-fit:contain;vertical-align:middle;margin-right:2px" alt="">OpenClaw</td></tr>
-                    <tr><td>Add screen share API</td><td><span class="hiw-tag yellow">In Progress</span></td><td>P0</td><td><img src="../Assests/callingclaw-logo.png" width="12" height="12" style="object-fit:contain;vertical-align:middle;margin-right:2px" alt="">OpenClaw</td></tr>
+                    <tr><td>Implement voice routing</td><td><span class="hiw-tag green">Done</span></td><td>P0</td><td><img src="../Assests/callingclaw-logo.png" width="12" height="12" style="object-fit:contain;vertical-align:middle;margin-right:2px" alt="" loading="lazy" decoding="async">OpenClaw</td></tr>
+                    <tr><td>Add screen share API</td><td><span class="hiw-tag yellow">In Progress</span></td><td>P0</td><td><img src="../Assests/callingclaw-logo.png" width="12" height="12" style="object-fit:contain;vertical-align:middle;margin-right:2px" alt="" loading="lazy" decoding="async">OpenClaw</td></tr>
                     <tr><td>Calendar integration</td><td><span class="hiw-tag red">Blocked</span></td><td>P1</td><td>Peter</td></tr>
-                    <tr><td>Visual diff optimization</td><td><span class="hiw-tag green">Done</span></td><td>P1</td><td><img src="../Assests/callingclaw-logo.png" width="12" height="12" style="object-fit:contain;vertical-align:middle;margin-right:2px" alt="">OpenClaw</td></tr>
+                    <tr><td>Visual diff optimization</td><td><span class="hiw-tag green">Done</span></td><td>P1</td><td><img src="../Assests/callingclaw-logo.png" width="12" height="12" style="object-fit:contain;vertical-align:middle;margin-right:2px" alt="" loading="lazy" decoding="async">OpenClaw</td></tr>
                   </tbody>
                 </table>
                 <div class="hiw-mf-caption" id="hiwMfCaption">
-                  <img src="../Assests/callingclaw-logo.png" width="14" height="14" style="object-fit:contain" alt=""> <span id="hiwMfCaptionText"><strong style="color:white">CallingClaw:</strong> <span style="color:white">Here's our current sprint plan.</span></span>
+                  <img src="../Assests/callingclaw-logo.png" width="14" height="14" style="object-fit:contain" alt="" loading="lazy" decoding="async"> <span id="hiwMfCaptionText"><strong style="color:white">CallingClaw:</strong> <span style="color:white">Here's our current sprint plan.</span></span>
                 </div>
               </div>
               <!-- Right: Stage sidebar -->
@@ -2912,7 +2924,7 @@
   <!-- CTA Section -->
   <section class="cta-section">
     <div class="cta-bg">
-      <img src="../Assests/Footer_CTA_new.png" alt="Video call your agent">
+      <img src="../Assests/Footer_CTA_new.webp" alt="Video call your agent" width="1440" height="720" loading="lazy" decoding="async">
     </div>
 
     <!-- Telephone Line Animation -->
@@ -3055,6 +3067,16 @@
       const gridBaseWrap = document.getElementById('flickeringGridBaseWrap');
       const gridGlowWrap = document.getElementById('flickeringGridGlowWrap');
 
+      // The hero grid canvases are position:fixed, so their IntersectionObserver never
+      // fires and visibility:hidden doesn't stop a rAF — pause them explicitly.
+      function setHeroGridsPaused(paused) {
+        var grids = window.__ccHeroGrids;
+        if (!grids) return;
+        for (var i = 0; i < grids.length; i++) {
+          if (paused) grids[i].pause(); else grids[i].resume();
+        }
+      }
+
       if (isMobile) {
         // Fade grid on scroll
         ScrollTrigger.create({
@@ -3065,6 +3087,7 @@
             var p = self.progress;
             if (gridBaseWrap) gridBaseWrap.style.opacity = Math.max(0, 1 - p * 2);
             if (gridGlowWrap) gridGlowWrap.style.opacity = Math.max(0, 1 - p * 3);
+            setHeroGridsPaused(p >= 0.5); // fully transparent from here on
           }
         });
       } else {
@@ -3076,7 +3099,35 @@
         });
 
         var heroSection = document.querySelector('.hero');
+        var heroTagline = document.getElementById('heroTagline');
         var ytScrollGuard = document.getElementById('ytScrollGuard');
+
+        // ── Layout-free hero expansion ───────────────────────────────────────
+        // The old tween animated `width` (+ border-radius) on the container, which
+        // reflowed the hero subtree and re-rastered the 1.16MB image every scroll
+        // frame. Identical picture, no layout: the container's box stays put and
+        // (a) the image scales via transform, (b) the container's visible window is
+        // a clip-path inset that grows past the box edge, (c) the tagline block —
+        // which the old layout growth pushed upward inside the fixed-height flex
+        // hero — is moved by the same amount with a transform.
+        heroImageContainer.style.overflow = 'visible'; // clip-path does the clipping now
+        gsap.set(heroImageContainer, { borderRadius: 0 });
+
+        function heroScrubGeom() {
+          var r = heroImageContainer.getBoundingClientRect();
+          var startW = r.width;
+          var startH = r.height;
+          if (!startH && heroImage.naturalWidth) {
+            startH = startW * heroImage.naturalHeight / heroImage.naturalWidth;
+          }
+          var scale = startW ? window.innerWidth / startW : 1;
+          return {
+            scale: scale,
+            padX: (window.innerWidth - startW) / 2,
+            padY: startH * (scale - 1) / 2
+          };
+        }
+
         var heroTl = gsap.timeline({
           scrollTrigger: {
             trigger: heroSection,
@@ -3085,6 +3136,11 @@
             pin: true,
             scrub: 0.3,
             anticipatePin: 1,
+            invalidateOnRefresh: true, // re-derive the clip/scale endpoints on resize
+            onToggle: function(self) {
+              // Only hint the compositor while the scrub is actually running
+              heroImageContainer.style.willChange = self.isActive ? 'clip-path' : '';
+            },
             onUpdate: function(self) {
               var p = self.progress;
               if (gridBaseWrap) gridBaseWrap.style.opacity = Math.max(0, 1 - p);
@@ -3094,19 +3150,40 @@
               if (p > 0.7) {
                 if (gridBaseWrap) gridBaseWrap.style.visibility = 'hidden';
                 if (gridGlowWrap) gridGlowWrap.style.visibility = 'hidden';
+                setHeroGridsPaused(true);
               } else {
                 if (gridBaseWrap) gridBaseWrap.style.visibility = '';
                 if (gridGlowWrap) gridGlowWrap.style.visibility = '';
+                setHeroGridsPaused(false);
               }
             },
           }
         });
 
-        heroTl.to(heroImageContainer, {
-          width: '100vw',
-          borderRadius: '0px',
+        heroTl.fromTo(heroImageContainer, {
+          clipPath: 'inset(0px 0px round 16px)'
+        }, {
+          clipPath: function() {
+            var g = heroScrubGeom();
+            return 'inset(' + (-g.padY) + 'px ' + (-g.padX) + 'px round 0px)';
+          },
           duration: 1,
-          ease: 'power1.inOut'
+          ease: 'power1.inOut',
+          immediateRender: true
+        }, 0);
+
+        heroTl.fromTo(heroImage, { scale: 1 }, {
+          scale: function() { return heroScrubGeom().scale; },
+          duration: 1,
+          ease: 'power1.inOut',
+          immediateRender: true
+        }, 0);
+
+        heroTl.fromTo(heroTagline, { y: 0 }, {
+          y: function() { return -heroScrubGeom().padY; },
+          duration: 1,
+          ease: 'power1.inOut',
+          immediateRender: true
         }, 0);
 
         heroTl.to(heroDemoPanel, {
@@ -3526,6 +3603,16 @@
       }, { threshold: 0 }).observe(hiw);
     })();
 
+    // ── Pause the CTA telephone-line dash animation when off-screen ──
+    ;(function() {
+      var cta = document.querySelector('.cta-section');
+      if (!cta) return;
+      cta.classList.add('offscreen');
+      new IntersectionObserver(function(entries) {
+        cta.classList.toggle('offscreen', !entries[0].isIntersecting);
+      }, { threshold: 0 }).observe(cta);
+    })();
+
     // ── Flickering Grid Animation (ported from React FlickeringGrid) ────
     ;(function initFlickeringGrid() {
       // ── Color parser: any CSS color → "rgba(r, g, b," prefix ──
@@ -3539,20 +3626,48 @@
         return `rgba(${r}, ${g}, ${b},`;
       }
 
+      // ── Global scroll gate ───────────────────────────
+      // Freezing the ambient flicker while the page is moving is imperceptible,
+      // and it keeps ~40k canvas ops off every scroll frame.
+      var scrolling = false;
+      var scrollIdle = null;
+      function markScrolling() {
+        scrolling = true;
+        clearTimeout(scrollIdle);
+        scrollIdle = setTimeout(function () { scrolling = false; }, 150);
+      }
+      if (typeof lenis !== 'undefined' && lenis && typeof lenis.on === 'function') {
+        lenis.on('scroll', markScrolling);
+      } else {
+        window.addEventListener('scroll', markScrolling, { passive: true });
+      }
+
       // ── Create one flickering grid on a canvas ──────
       function createGrid(canvas, opts) {
         const ctx = canvas.getContext('2d');
         const dpr = 1; // Cap at 1x — decorative 4px dots don't need retina (saves 4x draw calls)
         const squareSize = opts.squareSize || 4;
         const gridGap = opts.gridGap || 4;
+        const pitch = squareSize + gridGap;
         const flickerChance = opts.flickerChance || 0.1;
         const maxOpacity = opts.maxOpacity || 0.3;
         const colorPrefix = toRGBA(opts.color || '#000');
 
-        let cols, rows, squares, w, h;
+        // Opacity is quantised into a fixed set of levels so the colour strings can be
+        // built once and reused — one fillStyle assignment per level instead of one per cell.
+        const LEVELS = 32;
+        const levelColor = new Array(LEVELS);
+        for (let b = 0; b < LEVELS; b++) {
+          levelColor[b] = colorPrefix + ((b + 0.5) / LEVELS * maxOpacity).toFixed(4) + ')';
+        }
+
+        let cols, rows, squares, dirty, w, h;
         let lastTime = 0;
         let animId = null;
         let inView = true;
+        let paused = false;
+        let fullRedraw = true;
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         function resize() {
           w = canvas.parentElement.clientWidth;
@@ -3561,45 +3676,63 @@
           canvas.height = h * dpr;
           canvas.style.width = w + 'px';
           canvas.style.height = h + 'px';
-          cols = Math.floor(w / (squareSize + gridGap));
-          rows = Math.floor(h / (squareSize + gridGap));
-          squares = new Float32Array(cols * rows);
+          cols = Math.floor(w / pitch);
+          rows = Math.floor(h / pitch);
+          squares = new Uint8Array(cols * rows);
+          dirty = new Int32Array(cols * rows);
           for (let i = 0; i < squares.length; i++) {
-            squares[i] = Math.random() * maxOpacity;
+            squares[i] = (Math.random() * LEVELS) | 0;
+          }
+          fullRedraw = true;
+        }
+
+        // Repaints only the cells listed in `dirty[0..n)`, batched one fillStyle per level.
+        function paint(n) {
+          for (let d = 0; d < n; d++) {
+            const idx = dirty[d];
+            ctx.clearRect(((idx / rows) | 0) * pitch * dpr, (idx % rows) * pitch * dpr, squareSize * dpr, squareSize * dpr);
+          }
+          for (let b = 0; b < LEVELS; b++) {
+            let opened = false;
+            for (let d = 0; d < n; d++) {
+              const idx = dirty[d];
+              if (squares[idx] !== b) continue;
+              if (!opened) { ctx.fillStyle = levelColor[b]; opened = true; }
+              ctx.fillRect(((idx / rows) | 0) * pitch * dpr, (idx % rows) * pitch * dpr, squareSize * dpr, squareSize * dpr);
+            }
           }
         }
 
-        var frameSkip = 0;
+        // frameSkip is seeded per grid so the four grids never redraw on the same frame
+        var frameSkip = opts.phase || 0;
         function draw(time) {
           animId = requestAnimationFrame(draw);
-          if (!inView) return;
+          // Not visible / mid-scroll: nothing to do, and don't let dt pile up
+          if (!inView || scrolling) { lastTime = time; return; }
           // Throttle to ~15fps (every 4th frame) — 4 canvases at 60fps kills the main thread
           if (++frameSkip < 4) return;
           frameSkip = 0;
-          const dt = (time - lastTime) / 1000;
+          const dt = Math.min((time - lastTime) / 1000, 0.1);
           lastTime = time;
 
-          // Update flickering
-          for (let i = 0; i < squares.length; i++) {
-            if (Math.random() < flickerChance * dt * 4) {
-              squares[i] = Math.random() * maxOpacity;
-            }
+          if (fullRedraw) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < squares.length; i++) dirty[i] = i;
+            paint(squares.length);
+            fullRedraw = false;
+            return;
           }
 
-          // Draw
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-              const opacity = squares[i * rows + j];
-              ctx.fillStyle = colorPrefix + opacity + ')';
-              ctx.fillRect(
-                i * (squareSize + gridGap) * dpr,
-                j * (squareSize + gridGap) * dpr,
-                squareSize * dpr,
-                squareSize * dpr
-              );
+          // Only the ~3% of cells that flip this tick get touched (was: all of them)
+          const chance = flickerChance * dt * 4;
+          let n = 0;
+          for (let i = 0; i < squares.length; i++) {
+            if (Math.random() < chance) {
+              squares[i] = (Math.random() * LEVELS) | 0;
+              dirty[n++] = i;
             }
           }
+          if (n) paint(n);
         }
 
         // Visibility optimization
@@ -3611,39 +3744,55 @@
         ro.observe(canvas.parentElement);
 
         resize();
-        animId = requestAnimationFrame(draw);
+        if (!reduced) animId = requestAnimationFrame(draw);
 
-        // Respect reduced motion
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          cancelAnimationFrame(animId);
-        }
-
-        return { resize, destroy() { cancelAnimationFrame(animId); io.disconnect(); ro.disconnect(); } };
+        return {
+          resize,
+          // Geometric IntersectionObserver can't see the fixed hero canvases going away —
+          // the hero ScrollTrigger drives these explicitly instead.
+          pause() {
+            if (paused || reduced) return;
+            paused = true;
+            if (animId !== null) { cancelAnimationFrame(animId); animId = null; }
+          },
+          resume() {
+            if (!paused || reduced) return;
+            paused = false;
+            lastTime = 0;
+            if (animId === null) animId = requestAnimationFrame(draw);
+          },
+          destroy() { if (animId !== null) cancelAnimationFrame(animId); io.disconnect(); ro.disconnect(); },
+        };
       }
+
+      // Handles for the two fixed hero canvases — driven by the hero ScrollTrigger
+      const heroGrids = [];
 
       // ── Base grid: subtle pink/coral flickering ─────
       const baseCanvas = document.getElementById('flickeringGridBase');
       if (baseCanvas) {
-        createGrid(baseCanvas, {
+        heroGrids.push(createGrid(baseCanvas, {
           color: '#FFD6D1',
           maxOpacity: 0.45,
           flickerChance: 0.1,
           squareSize: 4,
           gridGap: 4,
-        });
+          phase: 0,
+        }));
       }
 
       // ── Glow grid: brighter, follows mouse ─────────
       const glowCanvas = document.getElementById('flickeringGridGlow');
       const glowWrap = document.getElementById('flickeringGridGlowWrap');
       if (glowCanvas && glowWrap) {
-        createGrid(glowCanvas, {
+        heroGrids.push(createGrid(glowCanvas, {
           color: '#DC4A3A',
           maxOpacity: 0.5,
           flickerChance: 0.3,
           squareSize: 4,
           gridGap: 4,
-        });
+          phase: 1,
+        }));
 
         // Mouse tracking — radial mask follows cursor (throttled to ~30fps)
         var lastMaskUpdate = 0;
@@ -3671,27 +3820,65 @@
         }, { passive: true, once: true });
       }
 
+      // Expose the hero pair; the hero ScrollTrigger pauses them once they fade out
+      // (their wraps are position:fixed, so the IntersectionObserver never reports them off-screen).
+      window.__ccHeroGrids = heroGrids;
+      // If that ScrollTrigger already ran before these existed (page loaded scrolled
+      // past the hero), catch up here. Desktop hides the wrap; mobile only fades it to
+      // opacity 0 — a computed number, so read it with parseFloat, not === '0'. Gate on
+      // the base wrap alone: the glow wrap fades out earlier than the pause threshold.
+      var baseWrapEl = document.getElementById('flickeringGridBaseWrap');
+      if (baseWrapEl && (baseWrapEl.style.visibility === 'hidden' || parseFloat(baseWrapEl.style.opacity) === 0)) {
+        for (var hg = 0; hg < heroGrids.length; hg++) heroGrids[hg].pause();
+      }
+
       // ── HiW section grid (dark bg, cream-colored) ──
       var hiwBase = document.getElementById('hiwGridBase');
       var hiwGlowCanvas = document.getElementById('hiwGridGlow');
       var hiwGlowWrap = document.getElementById('hiwGridGlowWrap');
       if (hiwBase) {
-        createGrid(hiwBase, { color: '#1a3d35', maxOpacity: 0.4, flickerChance: 0.08, squareSize: 4, gridGap: 5 });
+        createGrid(hiwBase, { color: '#1a3d35', maxOpacity: 0.4, flickerChance: 0.08, squareSize: 4, gridGap: 5, phase: 2 });
       }
       if (hiwGlowCanvas && hiwGlowWrap) {
-        createGrid(hiwGlowCanvas, { color: '#faf9f5', maxOpacity: 0.25, flickerChance: 0.25, squareSize: 4, gridGap: 5 });
-        document.addEventListener('mousemove', function(e) {
-          var sect = document.querySelector('.how-it-works');
-          if (!sect) return;
-          var r = sect.getBoundingClientRect();
-          if (e.clientY < r.top || e.clientY > r.bottom) { hiwGlowWrap.classList.remove('active'); return; }
-          hiwGlowWrap.classList.add('active');
-          var x = ((e.clientX - r.left) / r.width * 100).toFixed(1);
-          var y = ((e.clientY - r.top) / r.height * 100).toFixed(1);
-          var mask = 'radial-gradient(350px circle at ' + x + '% ' + y + '%, white, transparent)';
-          hiwGlowWrap.style.webkitMaskImage = mask;
-          hiwGlowWrap.style.maskImage = mask;
-        }, { passive: true });
+        createGrid(hiwGlowCanvas, { color: '#faf9f5', maxOpacity: 0.25, flickerChance: 0.25, squareSize: 4, gridGap: 5, phase: 3 });
+
+        // The old handler ran getBoundingClientRect on every single mousemove, which
+        // forced a synchronous reflow whenever a scrub had just dirtied layout. Now the
+        // section box is measured only on refresh/resize (document coordinates, so
+        // scrolling doesn't invalidate it) and the mask update is coalesced to one per frame.
+        var hiwSect = document.querySelector('.how-it-works');
+        if (hiwSect) {
+          var hiwBox = null, hiwQueued = false, hiwMx = 0, hiwMy = 0;
+          var measureHiw = function() {
+            var r = hiwSect.getBoundingClientRect();
+            hiwBox = { top: r.top + window.scrollY, left: r.left + window.scrollX, w: r.width, h: r.height };
+          };
+          measureHiw();
+          window.addEventListener('resize', measureHiw);
+          window.addEventListener('load', measureHiw);
+          if (window.ScrollTrigger) ScrollTrigger.addEventListener('refresh', measureHiw);
+          // content-visibility:auto means the real height only exists once it's near the viewport
+          new IntersectionObserver(measureHiw, { threshold: 0 }).observe(hiwSect);
+
+          var applyHiwMask = function() {
+            hiwQueued = false;
+            if (!hiwBox || !hiwBox.h) return;
+            var top = hiwBox.top - window.scrollY; // scrollY is a cheap read, no layout
+            if (hiwMy < top || hiwMy > top + hiwBox.h) { hiwGlowWrap.classList.remove('active'); return; }
+            hiwGlowWrap.classList.add('active');
+            var x = ((hiwMx - hiwBox.left) / hiwBox.w * 100).toFixed(1);
+            var y = ((hiwMy - top) / hiwBox.h * 100).toFixed(1);
+            var mask = 'radial-gradient(350px circle at ' + x + '% ' + y + '%, white, transparent)';
+            hiwGlowWrap.style.webkitMaskImage = mask;
+            hiwGlowWrap.style.maskImage = mask;
+          };
+
+          document.addEventListener('mousemove', function(e) {
+            hiwMx = e.clientX;
+            hiwMy = e.clientY;
+            if (!hiwQueued) { hiwQueued = true; requestAnimationFrame(applyHiwMask); }
+          }, { passive: true });
+        }
       }
     })();
   </script>
