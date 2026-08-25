@@ -515,7 +515,9 @@
       margin-inline: auto;
       overflow: hidden;
       border-radius: 16px;
-      will-change: width, border-radius;
+      /* No will-change here: the desktop scrub drives clip-path/transform and sets
+         will-change only while it is active (neither width nor border-radius could
+         ever be composited, so the old hint did nothing). */
     }
 
     .hero-image {
@@ -524,6 +526,7 @@
       display: block;
       object-fit: cover;
       border-radius: inherit;
+      transform-origin: 50% 50%;
     }
 
     /* Demo Panel Overlay — YouTube embed container */
@@ -3087,7 +3090,35 @@
         });
 
         var heroSection = document.querySelector('.hero');
+        var heroTagline = document.getElementById('heroTagline');
         var ytScrollGuard = document.getElementById('ytScrollGuard');
+
+        // ── Layout-free hero expansion ───────────────────────────────────────
+        // The old tween animated `width` (+ border-radius) on the container, which
+        // reflowed the hero subtree and re-rastered the 1.16MB image every scroll
+        // frame. Identical picture, no layout: the container's box stays put and
+        // (a) the image scales via transform, (b) the container's visible window is
+        // a clip-path inset that grows past the box edge, (c) the tagline block —
+        // which the old layout growth pushed upward inside the fixed-height flex
+        // hero — is moved by the same amount with a transform.
+        heroImageContainer.style.overflow = 'visible'; // clip-path does the clipping now
+        gsap.set(heroImageContainer, { borderRadius: 0 });
+
+        function heroScrubGeom() {
+          var r = heroImageContainer.getBoundingClientRect();
+          var startW = r.width;
+          var startH = r.height;
+          if (!startH && heroImage.naturalWidth) {
+            startH = startW * heroImage.naturalHeight / heroImage.naturalWidth;
+          }
+          var scale = startW ? window.innerWidth / startW : 1;
+          return {
+            scale: scale,
+            padX: (window.innerWidth - startW) / 2,
+            padY: startH * (scale - 1) / 2
+          };
+        }
+
         var heroTl = gsap.timeline({
           scrollTrigger: {
             trigger: heroSection,
@@ -3096,6 +3127,11 @@
             pin: true,
             scrub: 0.3,
             anticipatePin: 1,
+            invalidateOnRefresh: true, // re-derive the clip/scale endpoints on resize
+            onToggle: function(self) {
+              // Only hint the compositor while the scrub is actually running
+              heroImageContainer.style.willChange = self.isActive ? 'clip-path' : '';
+            },
             onUpdate: function(self) {
               var p = self.progress;
               if (gridBaseWrap) gridBaseWrap.style.opacity = Math.max(0, 1 - p);
@@ -3115,11 +3151,30 @@
           }
         });
 
-        heroTl.to(heroImageContainer, {
-          width: '100vw',
-          borderRadius: '0px',
+        heroTl.fromTo(heroImageContainer, {
+          clipPath: 'inset(0px 0px round 16px)'
+        }, {
+          clipPath: function() {
+            var g = heroScrubGeom();
+            return 'inset(' + (-g.padY) + 'px ' + (-g.padX) + 'px round 0px)';
+          },
           duration: 1,
-          ease: 'power1.inOut'
+          ease: 'power1.inOut',
+          immediateRender: true
+        }, 0);
+
+        heroTl.fromTo(heroImage, { scale: 1 }, {
+          scale: function() { return heroScrubGeom().scale; },
+          duration: 1,
+          ease: 'power1.inOut',
+          immediateRender: true
+        }, 0);
+
+        heroTl.fromTo(heroTagline, { y: 0 }, {
+          y: function() { return -heroScrubGeom().padY; },
+          duration: 1,
+          ease: 'power1.inOut',
+          immediateRender: true
         }, 0);
 
         heroTl.to(heroDemoPanel, {
